@@ -1,2 +1,4 @@
 node_modules
 .env
+basic.txt
+seedAdmin.js
