@@ -1,0 +1,36 @@
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+
+const bookingSchema = new mongoose.Schema(
+  {
+    customer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Customer",
+      required: true,
+    },
+    driver: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Driver",
+      required: true,
+    },
+    car: { type: mongoose.Schema.Types.ObjectId, ref: "Car", required: true },
+    startDate: { type: Date, required: true },
+    endDate: { type: Date, required: true },
+    actualReturnDate: { type: Date, default: null },
+    bookingType: { type: String, enum: ["perDay", "perKm"], required: true },
+    kmTravelled: { type: Number, default: 0 },
+    isAC: { type: Boolean, default: false },
+    totalAmount: { type: Number, default: 0 },
+    isCompleted: { type: Boolean, default: false },
+    isCancelled: { type: Boolean, default: false },
+    cancellationFine: { type: Number, default: 0 },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "completed", "failed"],
+      default: "pending",
+    },
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model("Booking", bookingSchema);
