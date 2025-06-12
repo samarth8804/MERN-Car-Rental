@@ -29,6 +29,7 @@ const bookingSchema = new mongoose.Schema(
       enum: ["pending", "completed", "failed"],
       default: "pending",
     },
+    uniqueCode: { type: String, unique: true, required: true },
   },
   { timestamps: true }
 );
