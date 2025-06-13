@@ -1,5 +1,7 @@
+const OTP = require("../models/OTP_Email");
 const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
+const { generateOTP } = require("./generateOTP");
 
 dotenv.config();
 
@@ -14,7 +16,16 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-exports.sendOTP = async (toEmail, subject, otp) => {
+exports.sendOTP = async (toEmail, subject) => {
+  const otp = generateOTP();
+
+  await OTP.deleteMany({ email: toEmail }); // Clear any existing OTPs for this email
+
+  await OTP.create({
+    email: toEmail,
+    otp: otp,
+  });
+
   const templatePath = path.join(__dirname, "../templates/otpEmail.html");
   let htmlTemplate = fs.readFileSync(templatePath, "utf-8");
   // Replace the placeholder with the actual OTP
