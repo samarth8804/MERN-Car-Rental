@@ -41,7 +41,7 @@ driverSchema.pre("save", async function (next) {
 
 // Method to compare passwords
 
-driverSchema.method.comparePassword = async function (candiadatePassword) {
+driverSchema.methods.comparePassword = async function (candiadatePassword) {
   try {
     return await bcrypt.compare(candiadatePassword, this.password);
   } catch (error) {

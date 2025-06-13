@@ -26,7 +26,7 @@ adminSchema.pre("save", async function (next) {
 });
 
 // Method to compare passwords
-adminSchema.method.comparePassword = async function (candiadatePassword) {
+adminSchema.methods.comparePassword = async function (candiadatePassword) {
   try {
     return await bcrypt.compare(candiadatePassword, this.password);
   } catch (error) {

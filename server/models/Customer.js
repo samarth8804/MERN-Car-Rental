@@ -26,7 +26,7 @@ customerSchema.pre("save", async function (next) {
 });
 
 // Method to compare passwords
-customerSchema.method.comparePassword = async function (candiadatePassword) {
+customerSchema.methods.comparePassword = async function (candiadatePassword) {
   try {
     return await bcrypt.compare(candiadatePassword, this.password);
   } catch (error) {

@@ -26,7 +26,7 @@ carOwnerSchema.pre("save", async function (next) {
 });
 
 // Method to compare passwords
-carOwnerSchema.method.comparePassword = async function (candiadatePassword) {
+carOwnerSchema.methods.comparePassword = async function (candiadatePassword) {
   try {
     return await bcrypt.compare(candiadatePassword, this.password);
   } catch (error) {
