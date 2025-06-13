@@ -14,3 +14,16 @@ exports.validatePassword = (password) => {
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
   return regex.test(password);
 };
+
+const dns = require("dns").promises;
+
+exports.validateDomainMX = async (email) => {
+  const domain = email.split("@")[1];
+  try {
+    const records = await dns.resolveMx(domain);
+    return records && records.length > 0;
+    // If MX records are found, the domain is valid for email
+  } catch (error) {
+    return false; // If there's an error, assume the domain is invalid
+  }
+};
