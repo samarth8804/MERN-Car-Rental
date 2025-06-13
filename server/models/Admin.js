@@ -12,7 +12,7 @@ const adminSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Hash the password before saving the car owner document
+// Hash the password before saving the admin document
 
 adminSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
@@ -34,4 +34,3 @@ adminSchema.method.comparePassword = async function (candiadatePassword) {
   }
 };
 module.exports = mongoose.model("Admin", adminSchema);
- 

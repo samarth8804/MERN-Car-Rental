@@ -21,6 +21,11 @@ const carSchema = new mongoose.Schema(
     pricePerDay: { type: Number, required: true, min: 0 },
     pricePerKm: { type: Number, required: true, min: 0 },
     imageUrl: { type: String, required: true },
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
+      default: null,
+    },
   },
   { timestamps: true }
 );
