@@ -157,20 +157,259 @@ exports.createCustomer = async (req, res) => {
       phone: newCustomer.phone,
       address: newCustomer.address,
     },
-    token: generateToken(newCustomer._id, "customer"),
   });
 };
 
 exports.loginCustomer = async (req, res) => {};
 
-exports.registerCarOwner = async (req, res) => {};
+exports.registerCarOwner = async (req, res) => {
+  const { fullname, email, phone, address, password } = req.body;
 
-exports.createCarOwner = async (req, res) => {};
+  // Check if all required fields are provided
+  if (!fullname || !email || !phone || !address || !password) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  // Validate email format
+  if (!validateEmail(email)) {
+    return res.status(400).json({ message: "Invalid email format" });
+  }
+
+  // Validate phone number format
+  if (!validatePhone(phone)) {
+    return res.status(400).json({ message: "Invalid phone number format" });
+  }
+
+  // Validate password format
+  if (!validatePassword(password)) {
+    return res.status(400).json({
+      message:
+        "Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character",
+    });
+  }
+
+  const domainValid = await validateDomainMX(email);
+  if (!domainValid) {
+    return res.status(400).json({ message: "Invalid email domain" });
+  }
+
+  // Check if CarOwner with email already exists
+  const existingCarOwner = await CarOwner.findOne({ email });
+  if (existingCarOwner) {
+    return res.status(400).json({ message: "CarOwner already exists" });
+  }
+
+  await sendOTP(email, "CarOwner Email Verification");
+
+  return res.status(200).json({
+    message: `An OTP has been sent to ${email}. Please verify it.`,
+  });
+};
+
+exports.createCarOwner = async (req, res) => {
+  const { fullname, email, phone, address, password, otp } = req.body;
+
+  // Check if all required fields are provided
+  if (!fullname || !email || !phone || !address || !password || !otp) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  // Validate email format
+  if (!validateEmail(email)) {
+    return res.status(400).json({ message: "Invalid email format" });
+  }
+
+  // Validate phone number format
+  if (!validatePhone(phone)) {
+    return res.status(400).json({ message: "Invalid phone number format" });
+  }
+
+  // Validate password format
+  if (!validatePassword(password)) {
+    return res.status(400).json({
+      message:
+        "Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character",
+    });
+  }
+
+  // Validated email domain exists
+  const domainValid = await validateDomainMX(email);
+  if (!domainValid) {
+    return res.status(400).json({ message: "Invalid email domain" });
+  }
+
+  // Check if customer with already exists
+  const existingCarOwner = await CarOwner.findOne({ email });
+  if (existingCarOwner) {
+    return res.status(400).json({ message: "CarOwner already exists" });
+  }
+
+  const storedOtp = await OTP.findOne({ email, otp });
+  if (!storedOtp) {
+    return res.status(400).json({ message: "Invalid OTP" });
+  }
+
+  await OTP.deleteMany({ email }); // Clear the OTP after successful verification
+
+  const newCarOwner = new CarOwner({
+    fullname,
+    email,
+    phone,
+    address,
+    password,
+  });
+
+  await newCarOwner.save();
+
+  return res.status(201).json({
+    id: newCarOwner._id,
+    message: "CarOwner registered successfully",
+    customer: {
+      id: newCarOwner._id,
+      fullname: newCarOwner.fullname,
+      email: newCarOwner.email,
+      phone: newCarOwner.phone,
+      address: newCarOwner.address,
+    },
+  });
+};
 
 exports.loginCarOwner = async (req, res) => {};
 
-exports.registerDriver = async (req, res) => {};
+exports.registerDriver = async (req, res) => {
+  const { fullname, email, phone, address, password, licenseNumber } = req.body;
 
-exports.createDriver = async (req, res) => {};
+  if (
+    !fullname ||
+    !email ||
+    !phone ||
+    !address ||
+    !password ||
+    !licenseNumber
+  ) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  if (!validateEmail(email)) {
+    return res.status(400).json({ message: "Invalid email format" });
+  }
+
+  if (!validatePhone(phone)) {
+    return res.status(400).json({ message: "Invalid phone number format" });
+  }
+
+  if (!validatePassword(password)) {
+    return res.status(400).json({
+      message:
+        "Password must be at least 8 characters and include uppercase, lowercase, number, and special character",
+    });
+  }
+
+  const domainValid = await validateDomainMX(email);
+  if (!domainValid) {
+    return res.status(400).json({ message: "Invalid email domain" });
+  }
+
+  const existingDriver = await Driver.findOne({ email });
+  if (existingDriver) {
+    return res
+      .status(400)
+      .json({ message: "Driver already exists with this email" });
+  }
+
+  const licenseExists = await Driver.findOne({ licenseNumber });
+  if (licenseExists) {
+    return res.status(400).json({ message: "License number already exists" });
+  }
+
+  await sendOTP(email, "Driver Email Verification");
+
+  return res.status(200).json({
+    message: `An OTP has been sent to ${email}. Please verify it.`,
+  });
+};
+
+exports.createDriver = async (req, res) => {
+  const { fullname, email, phone, address, password, licenseNumber, otp } =
+    req.body;
+
+  if (
+    !fullname ||
+    !email ||
+    !phone ||
+    !address ||
+    !password ||
+    !licenseNumber ||
+    !otp
+  ) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  if (!validateEmail(email)) {
+    return res.status(400).json({ message: "Invalid email format" });
+  }
+
+  if (!validatePhone(phone)) {
+    return res.status(400).json({ message: "Invalid phone number format" });
+  }
+
+  if (!validatePassword(password)) {
+    return res.status(400).json({
+      message:
+        "Password must be at least 8 characters and include uppercase, lowercase, number, and special character",
+    });
+  }
+
+  const domainValid = await validateDomainMX(email);
+  if (!domainValid) {
+    return res.status(400).json({ message: "Invalid email domain" });
+  }
+
+  const existingDriver = await Driver.findOne({ email });
+  if (existingDriver) {
+    return res
+      .status(400)
+      .json({ message: "Driver already exists with this email" });
+  }
+
+  const licenseExists = await Driver.findOne({ licenseNumber });
+  if (licenseExists) {
+    return res.status(400).json({ message: "License number already exists" });
+  }
+
+  const storedOtp = await OTP.findOne({ email, otp });
+  if (!storedOtp) {
+    return res.status(400).json({ message: "Invalid OTP" });
+  }
+
+  await OTP.deleteMany({ email });
+
+  const newDriver = new Driver({
+    fullname,
+    email,
+    phone,
+    address,
+    password,
+    licenseNumber,
+    // status is 'pending' by default
+  });
+
+  await newDriver.save();
+
+  return res.status(201).json({
+    id: newDriver._id,
+    message:
+      "Driver registered successfully. Await admin approval before login.",
+    driver: {
+      id: newDriver._id,
+      fullname: newDriver.fullname,
+      email: newDriver.email,
+      phone: newDriver.phone,
+      address: newDriver.address,
+      licenseNumber: newDriver.licenseNumber,
+      status: newDriver.status,
+    },
+  });
+};
 
 exports.loginDriver = async (req, res) => {};
