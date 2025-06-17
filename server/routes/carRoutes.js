@@ -1,8 +1,7 @@
 const express = require("express");
+const { getCarDetails } = require("../controllers/carController");
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.send("Welcome to the car rental app");
-});
+router.get("/car-details/:id", getCarDetails);
 
 module.exports = router;

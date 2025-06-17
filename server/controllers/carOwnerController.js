@@ -1,4 +1,5 @@
 const Car = require("../models/Cars");
+const Booking = require("../models/Bookings");
 
 exports.addCar = async (req, res) => {
   try {
@@ -70,9 +71,78 @@ exports.addCar = async (req, res) => {
   }
 };
 
-exports.getMyCars = async (req, res) => {};
+exports.getMyCars = async (req, res) => {
+  try {
+    const cars = await Car.find({ ownerId: req.user._id }).sort({
+      createdAt: -1,
+    });
 
-exports.deleteCar = async (req, res) => {};
+    if (cars.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No cars found for this owner",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      count: cars.length,
+      message: "Cars retrieved successfully",
+      cars,
+    });
+  } catch (error) {
+    console.error("Error fetching cars:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+exports.deleteCar = async (req, res) => {
+  try {
+    const carId = req.params.id;
+    const ownerId = req.user._id; // From auth middleware
+
+    // Find the car by ID and owner
+    const car = await Car.findOne({ _id: carId, ownerId });
+    if (!car) {
+      return res.status(404).json({
+        success: false,
+        message: "Car not found or unauthorized access",
+      });
+    }
+
+    // Check if the car is in an active booking
+    const activeBooking = await Booking.findOne({
+      car: car._id,
+      isCompleted: false,
+      isCancelled: false,
+    });
+
+    if (activeBooking) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot delete car with an active booking",
+      });
+    }
+
+    // Delete the car
+    await car.deleteOne();
+
+    return res.status(200).json({
+      success: true,
+      message: "Car deleted successfully",
+      carId: car._id,
+    });
+  } catch (error) {
+    console.error("Error deleting car:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
 
 exports.updateCar = async (req, res) => {
   try {
