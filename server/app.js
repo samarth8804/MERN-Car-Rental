@@ -3,7 +3,7 @@ const dotenv = require("dotenv");
 const express = require("express");
 const connectDB = require("./config/db");
 const cors = require("cors");
-
+const path = require("path");
 const app = express();
 
 dotenv.config();
@@ -19,6 +19,7 @@ const authRoutes = require("./routes/authRoutes");
 const customerRoutes = require("./routes/customerRoutes");
 const carRoutes = require("./routes/carRoutes");
 const driverRoutes = require("./routes/driverRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
 
 // Middleware to handle CORS
 app.use(
@@ -39,6 +40,10 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/customer", customerRoutes);
 app.use("/api/v1/car", carRoutes);
 app.use("/api/v1/driver", driverRoutes);
+app.use("/api/v1/upload", uploadRoutes);
+
+// Serve uploaded images
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 const PORT = process.env.PORT || 5000;
 
