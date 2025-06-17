@@ -499,7 +499,7 @@ exports.loginDriver = async (req, res) => {
     return res.status(200).json({
       id: driver._id,
       message: "Driver logged in successfully",
-      token: generateToken(driver._id, "customer"),
+      token: generateToken(driver._id, "driver"),
       admin: {
         id: driver._id,
         fullname: driver.fullname,
@@ -510,7 +510,6 @@ exports.loginDriver = async (req, res) => {
         status: driver.status,
         rating: driver.rating,
         totalRides: driver.totalRides,
-        earnings: driver.earnings,
       },
     });
   } catch (error) {
