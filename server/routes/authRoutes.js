@@ -14,7 +14,7 @@ const {
 } = require("../controllers/authController");
 
 // Admin login route
-router.post("/admin/login", loginAdmin);
+router.post("/login/admin", loginAdmin);
 
 // Customer registration and login routes
 router.post("/register/customer", registerCustomer);
