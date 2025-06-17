@@ -160,7 +160,41 @@ exports.createCustomer = async (req, res) => {
   });
 };
 
-exports.loginCustomer = async (req, res) => {};
+exports.loginCustomer = async (req, res) => {
+  const { email, password } = req.body;
+
+  // Validate input
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
+  }
+
+  try {
+    // Check if customer exists
+    const customer = await Customer.findOne({ email });
+
+    if (!customer || !(await customer.comparePassword(password))) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    return res.status(200).json({
+      id: customer._id,
+      message: "Customer logged in successfully",
+      token: generateToken(customer._id, "customer"),
+      admin: {
+        id: customer._id,
+        fullname: customer.fullname,
+        email: customer.email,
+        phone: customer.phone,
+        address: customer.address,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
 
 exports.registerCarOwner = async (req, res) => {
   const { fullname, email, phone, address, password } = req.body;
@@ -274,7 +308,41 @@ exports.createCarOwner = async (req, res) => {
   });
 };
 
-exports.loginCarOwner = async (req, res) => {};
+exports.loginCarOwner = async (req, res) => {
+  const { email, password } = req.body;
+
+  // Validate input
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
+  }
+
+  try {
+    // Check if carOwner exists
+    const carOwner = await CarOwner.findOne({ email });
+
+    if (!carOwner || !(await carOwner.comparePassword(password))) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    return res.status(200).json({
+      id: carOwner._id,
+      message: "CarOwner logged in successfully",
+      token: generateToken(carOwner._id, "carOwner"),
+      admin: {
+        id: carOwner._id,
+        fullname: carOwner.fullname,
+        email: carOwner.email,
+        phone: carOwner.phone,
+        address: carOwner.address,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
 
 exports.registerDriver = async (req, res) => {
   const { fullname, email, phone, address, password, licenseNumber } = req.body;
@@ -412,4 +480,43 @@ exports.createDriver = async (req, res) => {
   });
 };
 
-exports.loginDriver = async (req, res) => {};
+exports.loginDriver = async (req, res) => {
+  const { email, password } = req.body;
+
+  // Validate input
+  if (!email || !password) {
+    return res.status(400).json({ message: "Email and password are required" });
+  }
+
+  try {
+    // Check if driver exists
+    const driver = await Driver.findOne({ email });
+
+    if (!driver || !(await driver.comparePassword(password))) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    return res.status(200).json({
+      id: driver._id,
+      message: "Driver logged in successfully",
+      token: generateToken(driver._id, "customer"),
+      admin: {
+        id: driver._id,
+        fullname: driver.fullname,
+        email: driver.email,
+        phone: driver.phone,
+        address: driver.address,
+        licenseNumber: driver.licenseNumber,
+        status: driver.status,
+        rating: driver.rating,
+        totalRides: driver.totalRides,
+        earnings: driver.earnings,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
