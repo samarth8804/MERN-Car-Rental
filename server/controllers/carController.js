@@ -1,4 +1,6 @@
 const Cars = require("../models/Cars");
+const { sendEmail } = require("../utils/sendNotifications");
+const Booking = require("../models/Bookings");
 
 exports.getCarDetails = async (req, res) => {
   try {
@@ -73,6 +75,74 @@ exports.getCarDetails = async (req, res) => {
       success: false,
       message: "Internal server error",
       error: error.message,
+    });
+  }
+};
+
+exports.deleteCar = async (req, res) => {
+  try {
+    const { carId } = req.params;
+    const role = req.role; // From auth middleware
+    const userId = req.user._id; // From auth middleware
+
+    // Find the car by ID and owner
+    let car = await Cars.findById(carId).populate("ownerId", "fullname email");
+
+    if (!car) {
+      return res.status(404).json({
+        success: false,
+        message: "Car not found or unauthorized access",
+      });
+    }
+
+    if (
+      role === "carOwner" &&
+      car.ownerId._id.toString() !== userId.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to delete this car",
+      });
+    }
+
+    // Check if the car is in an active booking
+    const activeBooking = await Booking.findOne({
+      car: car._id,
+      isCompleted: false,
+      isCancelled: false,
+    });
+
+    if (activeBooking) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot delete car with an active booking",
+      });
+    }
+
+    // Delete the car
+    await car.deleteOne();
+
+    if (role === "admin" && car.ownerId.email) {
+      await sendEmail(
+        car.ownerId.email,
+        "Your Car has been Removed by easyGo",
+        `<p>Dear ${car.ownerId.fullname},</p>
+         <p>Your car with the license plate ${car.licensePlate} has been removed from our system by an admin.</p>
+         <p>If you have any questions, please contact support.</p>
+         <p>Thank you for using easyGo!</p>`
+      );
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Car deleted successfully",
+      carId: car._id,
+    });
+  } catch (error) {
+    console.error("Error deleting car:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
     });
   }
 };
