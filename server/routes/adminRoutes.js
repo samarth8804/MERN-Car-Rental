@@ -15,17 +15,17 @@ const { protect } = require("../middlewares/authMiddleware");
 
 router.get("/getAllCars", protect(["admin"]), getAllCars);
 
-router.patch("/approveCar", protect(["admin"]), approveCar);
+router.patch("/approveCar/:carId", protect(["admin"]), approveCar);
 
-router.patch("/rejectCar", protect(["admin"]), rejectCar);
+router.patch("/rejectCar/:carId", protect(["admin"]), rejectCar);
 
 router.delete("/deleteCar/:carId", protect(["admin"]), deleteCar);
 
 router.get("/getAllDrivers", protect(["admin"]), getAllDrivers);
 
-router.patch("/approveDriver", protect(["admin"]), approveDriver);
+router.patch("/approveDriver/:driverId", protect(["admin"]), approveDriver);
 
-router.patch("/rejectDriver", protect(["admin"]), rejectDriver);
+router.patch("/rejectDriver/:driverId", protect(["admin"]), rejectDriver);
 
 router.delete("/deleteDriver/:driverId", protect(["admin"]), deleteDriver);
 
