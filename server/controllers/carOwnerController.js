@@ -99,51 +99,6 @@ exports.getMyCars = async (req, res) => {
   }
 };
 
-exports.deleteCar = async (req, res) => {
-  try {
-    const carId = req.params.id;
-    const ownerId = req.user._id; // From auth middleware
-
-    // Find the car by ID and owner
-    const car = await Car.findOne({ _id: carId, ownerId });
-    if (!car) {
-      return res.status(404).json({
-        success: false,
-        message: "Car not found or unauthorized access",
-      });
-    }
-
-    // Check if the car is in an active booking
-    const activeBooking = await Booking.findOne({
-      car: car._id,
-      isCompleted: false,
-      isCancelled: false,
-    });
-
-    if (activeBooking) {
-      return res.status(400).json({
-        success: false,
-        message: "Cannot delete car with an active booking",
-      });
-    }
-
-    // Delete the car
-    await car.deleteOne();
-
-    return res.status(200).json({
-      success: true,
-      message: "Car deleted successfully",
-      carId: car._id,
-    });
-  } catch (error) {
-    console.error("Error deleting car:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-};
-
 exports.updateCar = async (req, res) => {
   try {
     const carId = req.params.id;
@@ -212,6 +167,7 @@ exports.updateCar = async (req, res) => {
     car.pricePerKm = pricePerKm;
     car.imageUrl = imageUrl;
     car.status = "pending"; // Reset status to pending on update
+    car.updatedAt = new Date(); // Update the timestamp
 
     await car.save();
 

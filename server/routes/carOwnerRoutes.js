@@ -1,7 +1,6 @@
 const express = require("express");
 const {
   addCar,
-  deleteCar,
   updateCar,
   getMyCars,
 } = require("../controllers/carOwnerController");
@@ -17,7 +16,5 @@ router.get("/my-cars", protect(["carOwner"]), getMyCars);
 // Car Owner updates a Car
 router.put("/update-car/:id", protect(["carOwner"]), updateCar);
 
-// Car Owner deletes a Car
-router.delete("/delete-car/:id", protect(["carOwner"]), deleteCar);
 
 module.exports = router;
