@@ -1,6 +1,8 @@
 const Cars = require("../models/Cars");
 const { sendEmail } = require("../utils/sendNotifications");
 const Booking = require("../models/Bookings");
+const path = require("path");
+const fs = require("fs").promises;
 
 exports.getCarDetails = async (req, res) => {
   try {
@@ -121,6 +123,24 @@ exports.deleteCar = async (req, res) => {
 
     // Delete the car
     await car.deleteOne();
+
+    // Delete the car image from storage
+    if (car.imageUrl) {
+      try {
+        const imagePath = path.join(
+          __dirname,
+          "..",
+          "uploads",
+          path.basename(car.imageUrl)
+        );
+        await fs.unlink(imagePath);
+        console.log("Car image deleted successfully");
+      } catch (err) {
+        console.error("Error deleting car image:", err);
+      }
+    }
+
+    // If the user is an admin, send a notification email to the car owner
 
     if (role === "admin" && car.ownerId.email) {
       await sendEmail(
