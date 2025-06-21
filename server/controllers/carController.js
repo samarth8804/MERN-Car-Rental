@@ -1,5 +1,5 @@
 const Cars = require("../models/Cars");
-const { sendEmail } = require("../utils/sendNotifications");
+const { sendNotifications } = require("../utils/sendNotifications");
 const Booking = require("../models/Bookings");
 const path = require("path");
 const fs = require("fs").promises;
@@ -143,7 +143,7 @@ exports.deleteCar = async (req, res) => {
     // If the user is an admin, send a notification email to the car owner
 
     if (role === "admin" && car.ownerId.email) {
-      await sendEmail(
+      await sendNotifications(
         car.ownerId.email,
         "Your Car has been Removed by easyGo",
         `<p>Dear ${car.ownerId.fullname},</p>
