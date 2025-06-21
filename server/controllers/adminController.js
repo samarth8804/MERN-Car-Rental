@@ -118,14 +118,124 @@ exports.rejectCar = async (req, res) => {
   }
 };
 
-exports.deleteCar = async (req, res) => {};
+exports.getAllDrivers = async (req, res) => {
+  try {
+    const drivers = await Driver.find()
+      .select("-password")
+      .populate("approvedBy", "fullname email")
+      .sort({ createdAt: -1 });
 
-exports.getAllDrivers = async (req, res) => {};
+    if (drivers.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No drivers found", success: false });
+    }
 
-exports.approveDriver = async (req, res) => {};
+    res.status(200).json({
+      success: true,
+      message: "Drivers fetched successfully",
+      drivers,
+    });
+  } catch (error) {
+    console.error("Error fetching drivers:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
 
-exports.rejectDriver = async (req, res) => {};
+exports.approveDriver = async (req, res) => {
+  try {
+    const { driverId } = req.params;
+    const adminId = req.user._id;
 
-exports.deleteDriver = async (req, res) => {};
+    const driver = await Driver.findById(driverId).select("-password");
+
+    if (!driver) {
+      return res.status(404).json({
+        success: false,
+        message: "Driver not found",
+      });
+    }
+
+    if (driver.status === "approved") {
+      return res.status(400).json({
+        success: false,
+        message: "Driver is already approved",
+      });
+    }
+
+    driver.status = "approved";
+    driver.approvedBy = adminId;
+    driver.updatedAt = new Date();
+
+    await driver.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver approved successfully",
+      driver,
+    });
+  } catch (error) {
+    console.error("Error approving driver:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+exports.rejectDriver = async (req, res) => {
+  try {
+    const { driverId } = req.params;
+    const adminId = req.user._id;
+
+    const driver = await Driver.findById(driverId).select("-password");
+
+    if (!driver) {
+      return res.status(404).json({
+        success: false,
+        message: "Driver not found",
+      });
+    }
+
+    if (driver.status === "approved") {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot reject an already approved driver",
+      });
+    }
+
+    if (driver.status === "rejected") {
+      return res.status(400).json({
+        success: false,
+        message: "Driver is already rejected",
+      });
+    }
+
+    driver.status = "rejected";
+    driver.updatedAt = new Date();
+
+    await driver.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver rejected successfully",
+      driver,
+      rejectedBy: adminId,
+    });
+  } catch (error) {
+    console.error("Error rejecting driver:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
 
 exports.getAllBookings = async (req, res) => {};
