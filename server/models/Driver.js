@@ -17,7 +17,7 @@ const driverSchema = new mongoose.Schema(
     rating: { type: Number, default: 0, max: 5, min: 0 },
     totalRides: { type: Number, default: 0 },
     earnings: { type: Number, default: 0 },
-    aprrovedBy: {
+    approvedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Admin",
       default: null,
