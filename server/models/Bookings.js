@@ -17,6 +17,7 @@ const bookingSchema = new mongoose.Schema(
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
     actualReturnDate: { type: Date, default: null },
+    lateReturnFine: { type: Number, default: 0 },
     bookingType: { type: String, enum: ["perDay", "perKm"], required: true },
     kmTravelled: { type: Number, default: 0 },
     isAC: { type: Boolean, default: false },
