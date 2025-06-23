@@ -1,0 +1,1 @@
+exports.getBookingHistory = (req, res) => {};
