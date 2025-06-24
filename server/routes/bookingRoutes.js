@@ -1,8 +1,8 @@
 const express = require("express");
+const { cancelBooking } = require("../controllers/bookingsController");
+const { protect } = require("../middlewares/authMiddleware");
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.send("Welcome to the car rental app");
-});
+router.post("/cancel-booking", protect(["customer","admin"]), cancelBooking);
 
 module.exports = router;
