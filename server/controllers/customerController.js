@@ -188,3 +188,85 @@ exports.getCustomerProfile = async (req, res) => {
     });
   }
 };
+
+exports.rateDriver = async (req, res) => {
+  try {
+    const { bookingId, rating } = req.body;
+    const customerId = req.user._id;
+
+    if (!bookingId || !rating || rating < 1 || rating > 5) {
+      return res.status(400).json({
+        success: false,
+        message: "Booking ID and valid rating (1-5) are required",
+      });
+    }
+
+    // Find the booking
+    const booking = await Bookings.findById(bookingId);
+
+    // Check if booking exists
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    // Check if the customer is authorized to rate this booking
+    if (booking.customer.toString() !== customerId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to rate for this ride",
+      });
+    }
+
+    // Check if the booking is completed or cancelled
+    if (!booking.isCompleted || booking.isCancelled) {
+      return res.status(400).json({
+        success: false,
+        message: "Ride must be completed to rate the driver",
+      });
+    }
+
+    // Check if the driver has already been rated
+    if (booking.isRated) {
+      return res.status(400).json({
+        success: false,
+        message: "Driver has already been rated for this ride",
+      });
+    }
+
+    // Find the driver and update their rating
+    const driver = await Driver.findById(booking.driver);
+    if (!driver) {
+      return res.status(404).json({
+        success: false,
+        message: "Driver not found",
+      });
+    }
+    // Calculate new average rating
+    const existingRatings = driver.ratingCount || 0;
+    const currentTotalRating = driver.rating * driver.ratingCount;
+    const newAverageRating = Math.floor(
+      Math.abs((currentTotalRating + rating) / (existingRatings + 1))
+    );
+
+    driver.rating = newAverageRating;
+    driver.ratingCount = existingRatings + 1; // Increment rating count
+    booking.isRated = true; // Mark the booking as rated
+    await driver.save();
+    await booking.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Driver rated successfully",
+    });
+  } catch (error) {
+    console.error("Error rating driver:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
