@@ -31,6 +31,7 @@ const bookingSchema = new mongoose.Schema(
       default: "pending",
     },
     uniqueCode: { type: String, unique: true, required: true },
+    isRated: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
