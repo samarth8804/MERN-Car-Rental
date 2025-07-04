@@ -15,6 +15,7 @@ const driverSchema = new mongoose.Schema(
       default: "pending",
     },
     rating: { type: Number, default: 0, max: 5, min: 0 },
+    ratingCount: { type: Number, default: 0 },
     totalRides: { type: Number, default: 0 },
     earnings: { type: Number, default: 0 },
     approvedBy: {
