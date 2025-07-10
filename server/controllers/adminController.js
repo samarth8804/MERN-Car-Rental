@@ -238,4 +238,3 @@ exports.rejectDriver = async (req, res) => {
 };
 
 
-exports.getAllBookings = async (req, res) => {};
