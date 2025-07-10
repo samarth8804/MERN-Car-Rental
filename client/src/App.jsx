@@ -4,45 +4,124 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 
+// Public pages
 import Home from "./pages/Home";
 import About from "./pages/InfoPages/About";
 import Contact from "./pages/InfoPages/Contact";
 import FAQs from "./pages/InfoPages/FAQs";
+
+// Auth pages
 import Login from "./pages/Auth/Login";
 import Signup from "./pages/Auth/Signup";
+
+// User Dashboard pages
 import AdminDashboard from "./pages/Dashboard/AdminDashboard";
 import CustomerDashboard from "./pages/Dashboard/CustomerDashboard";
 import CarOwnerDashboard from "./pages/Dashboard/CarOwnerDashboard";
+import DriverDashboard from "./pages/Dashboard/DriverDashboard";
+
+// Error pages
+import NotFound from "./pages/Error/NotFound";
+import Unauthorized from "./pages/Error/Unauthorized";
+
+// Context for authentication
+import { AuthProvider } from "./context/UserContext";
+
+// Protected Route component
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
-    <div>
-      <Router>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Home />}></Route>
-          <Route path="/about" element={<About />}></Route>
-          <Route path="/contact" element={<Contact />}></Route>
-          <Route path="/faqs" element={<FAQs />}></Route>
+    <AuthProvider>
+      <div className="App">
+        <Router>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/faqs" element={<FAQs />} />
 
-          {/* Auth Routes */}
-          <Route path="/login" element={<Login />}></Route>
-          <Route path="/signup" element={<Signup />}></Route>
+            {/* Auth Routes with role parameters */}
+            <Route path="/login/:role" element={<Login />} />
+            <Route path="/signup/:role" element={<Signup />} />
 
-          {/* Role-Based */}
-          <Route path="/dashboard/admin" element={<AdminDashboard />}></Route>
-          <Route
-            path="/dashboard/customer"
-            element={<CustomerDashboard />}
-          ></Route>
-          <Route
-            path="/dashboard/owner"
-            element={<CarOwnerDashboard />}
-          ></Route>
-        </Routes>
-      </Router>
-    </div>
+            {/* Protected Role-Based Dashboard Routes */}
+            <Route
+              path="/dashboard/admin"
+              element={
+                <ProtectedRoute allowedRoles="admin">
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/customer"
+              element={
+                <ProtectedRoute allowedRoles="customer">
+                  <CustomerDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/car-owner"
+              element={
+                <ProtectedRoute allowedRoles="car-owner">
+                  <CarOwnerDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/driver"
+              element={
+                <ProtectedRoute allowedRoles="driver">
+                  <DriverDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Error Routes */}
+            <Route path="/unauthorized" element={<Unauthorized />} />
+
+            {/* 🎯 SINGLE CATCH-ALL ROUTE - HANDLES EVERYTHING */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Router>
+
+        {/* React Hot Toast container */}
+        <Toaster
+          position="top-right"
+          reverseOrder={false}
+          gutter={8}
+          containerClassName=""
+          containerStyle={{}}
+          toastOptions={{
+            className: "",
+            duration: 5000,
+            style: {
+              background: "#363636",
+              color: "#fff",
+            },
+            success: {
+              duration: 3000,
+              theme: {
+                primary: "#4caf50",
+                secondary: "#fff",
+              },
+            },
+            error: {
+              duration: 3000,
+              theme: {
+                primary: "#f44336",
+                secondary: "#fff",
+              },
+            },
+          }}
+        />
+      </div>
+    </AuthProvider>
   );
 }
 
