@@ -184,6 +184,8 @@ exports.endRide = async (req, res) => {
         brand: car.brand,
         model: car.model,
         licensePlate: car.licensePlate,
+        pickupLocation: booking.pickupLocation,
+        dropLocation: booking.dropLocation,
         startDate: booking.startDate,
         endDate: booking.endDate,
         actualReturnDate: actualReturnDate,

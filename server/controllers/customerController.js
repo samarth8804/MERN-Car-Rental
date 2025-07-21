@@ -41,12 +41,31 @@ exports.getAvailableCars = async (req, res) => {
 
 exports.bookCar = async (req, res) => {
   try {
-    const { carId, startDate, endDate, bookingType, isAC = false } = req.body;
+    const {
+      carId,
+      startDate,
+      endDate,
+      bookingType,
+      isAC = false,
+      pickupLocation,
+      dropLocation,
+    } = req.body;
 
     const customerId = req.user._id;
 
     // Validate required fields
-    if (!carId || !startDate || !endDate || !bookingType) {
+    if (
+      !carId ||
+      !startDate ||
+      !endDate ||
+      !bookingType ||
+      !pickupLocation?.address ||
+      !pickupLocation?.coordinates?.latitude ||
+      !pickupLocation?.coordinates?.longitude ||
+      !dropLocation?.address ||
+      !dropLocation?.coordinates?.latitude ||
+      !dropLocation?.coordinates?.longitude
+    ) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
@@ -137,6 +156,20 @@ exports.bookCar = async (req, res) => {
       endDate,
       bookingType,
       isAC,
+      pickupLocation: {
+        address: pickupLocation.address,
+        coordinates: {
+          latitude: pickupLocation.coordinates.latitude,
+          longitude: pickupLocation.coordinates.longitude,
+        },
+      },
+      dropLocation: {
+        address: dropLocation.address,
+        coordinates: {
+          latitude: dropLocation.coordinates.latitude,
+          longitude: dropLocation.coordinates.longitude,
+        },
+      },
       uniqueCode: nanoid(10),
     });
 

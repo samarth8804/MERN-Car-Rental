@@ -14,6 +14,20 @@ const bookingSchema = new mongoose.Schema(
       required: true,
     },
     car: { type: mongoose.Schema.Types.ObjectId, ref: "Car", required: true },
+    pickupLocation: {
+      address: { type: String, required: true },
+      coordinates: {
+        latitude: { type: Number, required: true },
+        longitude: { type: Number, required: true },
+      },
+    },
+    dropLocation: {
+      address: { type: String, required: true },
+      coordinates: {
+        latitude: { type: Number, required: true },
+        longitude: { type: Number, required: true },
+      },
+    },
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
     actualReturnDate: { type: Date, default: null },
