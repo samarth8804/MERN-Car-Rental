@@ -8,7 +8,7 @@ const {
 const router = express.Router();
 const { protect } = require("../middlewares/authMiddleware");
 
-router.get("/get-available-cars", protect(["customer"]), getAvailableCars);
+router.get("/get-available-cars", getAvailableCars);
 
 router.post("/book-car", protect(["customer"]), bookCar);
 
