@@ -11,6 +11,7 @@ import {
   FaSignOutAlt,
   FaBell,
 } from "react-icons/fa";
+import Logo from "../common/Logo";
 
 const Navbar = ({ onOpenRoleModal = null }) => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -56,12 +57,7 @@ const Navbar = ({ onOpenRoleModal = null }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-2 rounded-lg">
-              <FaCar className="text-xl" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900">easyGo</span>
-          </Link>
+          <Logo />
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
