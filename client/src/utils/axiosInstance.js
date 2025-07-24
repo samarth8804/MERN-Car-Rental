@@ -49,11 +49,27 @@ axiosInstance.interceptors.response.use(
     if (error.response) {
       if (error.response.status === 401) {
         console.error("Unauthorized: Session expired. Please login again.");
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        window.location.href = "/login"; // Redirect to login on unauthorized access
+
+        const currentPath = window.location.pathname;
+        const isOnAuthPage =
+          currentPath.includes("/login") || currentPath.includes("/signup");
+
+        if (!isOnAuthPage) {
+          // User is on a protected page and token is invalid
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+
+          // Try to preserve the role from current path
+          const roleMatch = currentPath.match(/\/dashboard\/(\w+)/);
+          const targetRole = roleMatch ? roleMatch[1] : "customer";
+
+          window.location.href = `/login/${targetRole}`;
+        }
+        // If on auth page, let the component handle the error (don't redirect)
       } else if (error.response.status === 403) {
-        console.error("Forbidden: You don't have permission to access this resource");
+        console.error(
+          "Forbidden: You don't have permission to access this resource"
+        );
       } else if (error.response.status === 400) {
         console.error("Bad Request:", errorMessage);
       } else if (error.response.status === 404) {
@@ -87,6 +103,7 @@ axiosInstance.interceptors.response.use(
       type: "HTTP_ERROR",
       originalError: error,
       data: data,
+      response: error.response, // Include response for components to access
     });
   }
 );
