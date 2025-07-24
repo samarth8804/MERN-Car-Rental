@@ -4,7 +4,6 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
 
 // Public pages
 import Home from "./pages/Home";
@@ -31,6 +30,7 @@ import { AuthProvider } from "./context/UserContext";
 
 // Protected Route component
 import ProtectedRoute from "./components/ProtectedRoute";
+import { ToastContainer } from "./config/toastConfig";
 
 function App() {
   return (
@@ -91,35 +91,7 @@ function App() {
         </Router>
 
         {/* React Hot Toast container */}
-        <Toaster
-          position="top-right"
-          reverseOrder={false}
-          gutter={8}
-          containerClassName=""
-          containerStyle={{}}
-          toastOptions={{
-            className: "",
-            duration: 5000,
-            style: {
-              background: "#363636",
-              color: "#fff",
-            },
-            success: {
-              duration: 3000,
-              theme: {
-                primary: "#4caf50",
-                secondary: "#fff",
-              },
-            },
-            error: {
-              duration: 3000,
-              theme: {
-                primary: "#f44336",
-                secondary: "#fff",
-              },
-            },
-          }}
-        />
+        <ToastContainer />
       </div>
     </AuthProvider>
   );
