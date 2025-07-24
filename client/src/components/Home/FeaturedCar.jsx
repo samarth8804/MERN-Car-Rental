@@ -106,21 +106,21 @@ const FeaturedCars = ({ onOpenRoleModal }) => {
           </div>
 
           <div className="text-center py-20">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto mb-6">
-              <div className="text-red-600 text-lg mb-2">
-                ⚠️ Connection Error
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 max-w-md mx-auto mb-6">
+              <div className="text-6xl mb-4">🚗</div>
+              <div className="text-gray-800 text-lg font-medium mb-2">
+                Unable to load vehicles
               </div>
-              <div className="text-red-700 text-sm mb-4">{error}</div>
-              <div className="text-gray-600 text-xs">
-                Make sure your backend server is running on port 3000
+              <div className="text-gray-600 text-sm mb-6">
+                Please check your connection and try again
               </div>
+              <button
+                onClick={fetchCars}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300 font-medium"
+              >
+                Try Again
+              </button>
             </div>
-            <button
-              onClick={fetchCars}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300"
-            >
-              Try Again
-            </button>
           </div>
         </div>
       </section>
