@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { FaEye, FaEyeSlash, FaSpinner, FaSignInAlt } from "react-icons/fa"; // ✅ Changed to FaSignInAlt
+import {
+  FaEye,
+  FaEyeSlash,
+  FaSpinner,
+  FaSignInAlt,
+  FaEnvelope,
+  FaLock,
+} from "react-icons/fa"; // ✅ Added FaEnvelope and FaLock
 
 const LoginForm = ({
   formData,
@@ -22,6 +29,7 @@ const LoginForm = ({
             htmlFor="email"
             className="block text-sm font-semibold text-gray-700 mb-2"
           >
+            <FaEnvelope className="inline mr-2 text-gray-500" />
             Email Address
           </label>
           <input
@@ -52,6 +60,7 @@ const LoginForm = ({
             htmlFor="password"
             className="block text-sm font-semibold text-gray-700 mb-2"
           >
+            <FaLock className="inline mr-2 text-gray-500" />
             Password
           </label>
           <div className="relative">
@@ -104,7 +113,6 @@ const LoginForm = ({
             ) : (
               <>
                 <span>Sign In</span>
-                {/* ✅ Using FaSignInAlt icon - perfect for sign-in buttons */}
                 <FaSignInAlt className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
               </>
             )}
