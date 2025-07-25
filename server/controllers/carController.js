@@ -37,6 +37,7 @@ exports.getCarDetails = async (req, res) => {
       pricePerKm: car.pricePerKm,
       imageUrl: car.imageUrl,
       isAvailable: car.isAvailable,
+      city: car.city,
     };
 
     let extendedCarDetails = {};
@@ -163,6 +164,85 @@ exports.deleteCar = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Internal server error",
+    });
+  }
+};
+
+exports.getAvailableCities = async (req, res) => {
+  try {
+    // Get cities with available cars
+    const citiesData = await Cars.aggregate([
+      {
+        $match: {
+          status: "approved",
+          isAvailable: true,
+        },
+      },
+      {
+        $group: {
+          _id: "$city",
+          availableCars: { $sum: 1 },
+          minPrice: { $min: "$pricePerDay" },
+          maxPrice: { $max: "$pricePerDay" },
+          avgPrice: { $avg: "$pricePerDay" },
+        },
+      },
+      {
+        $project: {
+          city: "$_id",
+          availableCars: 1,
+          minPrice: 1,
+          maxPrice: 1,
+          avgPrice: { $round: ["$avgPrice", 0] },
+          _id: 0,
+        },
+      },
+      {
+        $sort: { availableCars: -1 },
+      },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      count: citiesData.length,
+      data: citiesData,
+    });
+  } catch (error) {
+    console.error("Error fetching available cities:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching available cities",
+      error: error.message,
+    });
+  }
+};
+
+exports.getCarsByCity = async (req, res) => {
+  try {
+    const { city } = req.params;
+
+    const cars = await Cars.find({
+      city: city,
+      status: "approved",
+      isAvailable: true,
+    })
+      .select(
+        "brand model year licensePlate pricePerKm pricePerDay imageUrl isAvailable city"
+      )
+      .sort({ pricePerDay: 1 });
+
+    res.status(200).json({
+      success: true,
+      count: cars.length,
+      city: city,
+      data: cars,
+    });
+  } catch (error) {
+    console.error("Error fetching cars by city:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching cars by city",
+      error: error.message,
     });
   }
 };
