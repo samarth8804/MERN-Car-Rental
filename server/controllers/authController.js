@@ -346,7 +346,8 @@ exports.loginCarOwner = async (req, res) => {
 };
 
 exports.registerDriver = async (req, res) => {
-  const { fullname, email, phone, address, password, licenseNumber } = req.body;
+  const { fullname, email, phone, address, password, licenseNumber, city } =
+    req.body;
 
   if (
     !fullname ||
@@ -354,7 +355,8 @@ exports.registerDriver = async (req, res) => {
     !phone ||
     !address ||
     !password ||
-    !licenseNumber
+    !licenseNumber ||
+    !city
   ) {
     return res.status(400).json({ message: "All fields are required" });
   }
@@ -406,8 +408,16 @@ exports.registerDriver = async (req, res) => {
 };
 
 exports.createDriver = async (req, res) => {
-  const { fullname, email, phone, address, password, licenseNumber, otp } =
-    req.body;
+  const {
+    fullname,
+    email,
+    phone,
+    address,
+    password,
+    licenseNumber,
+    otp,
+    city,
+  } = req.body;
 
   if (
     !fullname ||
@@ -416,7 +426,8 @@ exports.createDriver = async (req, res) => {
     !address ||
     !password ||
     !licenseNumber ||
-    !otp
+    !otp ||
+    !city
   ) {
     return res.status(400).json({ message: "All fields are required" });
   }
@@ -474,6 +485,7 @@ exports.createDriver = async (req, res) => {
     address,
     password,
     licenseNumber,
+    city,
     // status is 'pending' by default
   });
 
@@ -490,6 +502,7 @@ exports.createDriver = async (req, res) => {
       phone: newDriver.phone,
       address: newDriver.address,
       licenseNumber: newDriver.licenseNumber,
+      city: newDriver.city,
       status: newDriver.status,
     },
   });
