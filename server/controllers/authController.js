@@ -10,6 +10,7 @@ const {
   validatePhone,
   validateDomainMX,
   validatePassword,
+  validateLicenseNumber,
 } = require("../utils/validators");
 const { sendOTP } = require("../utils/sendOTP");
 
@@ -373,6 +374,13 @@ exports.registerDriver = async (req, res) => {
     });
   }
 
+  // ✅ Simple license validation error message
+  if (!validateLicenseNumber(licenseNumber)) {
+    return res.status(400).json({
+      message: "Invalid license number format",
+    });
+  }
+
   const domainValid = await validateDomainMX(email);
   if (!domainValid) {
     return res.status(400).json({ message: "Invalid email domain" });
@@ -425,6 +433,13 @@ exports.createDriver = async (req, res) => {
     return res.status(400).json({
       message:
         "Password must be at least 8 characters and include uppercase, lowercase, number, and special character",
+    });
+  }
+
+  // ✅ Simple license validation error message
+  if (!validateLicenseNumber(licenseNumber)) {
+    return res.status(400).json({
+      message: "Invalid license number format",
     });
   }
 
@@ -496,11 +511,35 @@ exports.loginDriver = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
+    // ✅ Check if driver is approved by admin
+    if (driver.status !== "approved") {
+      if (driver.status === "pending") {
+        return res.status(403).json({
+          message:
+            "Your account is pending admin approval. Please wait for approval before logging in.",
+          status: "pending",
+        });
+      } else if (driver.status === "rejected") {
+        return res.status(403).json({
+          message:
+            "Your account has been rejected by admin. Please contact support for more information.",
+          status: "rejected",
+        });
+      } else {
+        return res.status(403).json({
+          message:
+            "Your account is not approved for login. Please contact admin.",
+          status: driver.status,
+        });
+      }
+    }
+
+    // ✅ Only allow login if driver is approved
     return res.status(200).json({
       id: driver._id,
       message: "Driver logged in successfully",
       token: generateToken(driver._id, "driver"),
-      admin: {
+      driver: {
         id: driver._id,
         fullname: driver.fullname,
         email: driver.email,
