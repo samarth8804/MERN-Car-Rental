@@ -1,4 +1,4 @@
-import { FaStar, FaCar } from "react-icons/fa";
+import { FaStar, FaCar, FaMapMarkerAlt } from "react-icons/fa";
 import { MdDirectionsCar } from "react-icons/md";
 
 const CarsCard = ({
@@ -53,6 +53,13 @@ const CarsCard = ({
             <p className="text-sm text-gray-500">
               {car.year} • {car.licensePlate}
             </p>
+            {/* ✅ ADD CITY DISPLAY */}
+            {car.city && (
+              <div className="flex items-center text-sm text-blue-600 mt-1">
+                <FaMapMarkerAlt className="mr-1" />
+                <span>{car.city}</span>
+              </div>
+            )}
           </div>
         </div>
 
