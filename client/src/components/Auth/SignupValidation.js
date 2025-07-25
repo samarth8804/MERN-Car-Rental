@@ -57,8 +57,14 @@ export const validateSignupForm = (formData, role, loading) => {
     newErrors.confirmPassword = "Passwords do not match";
   }
 
-  // Driver-specific license validation
+  // Driver-specific validation
   if (role === "driver") {
+    // ✅ CITY VALIDATION FOR DRIVERS
+    if (!formData.city?.trim()) {
+      newErrors.city = "Operating city is required for drivers";
+    }
+
+    // License number validation
     if (!formData.licenseNumber?.trim()) {
       newErrors.licenseNumber = "License number is required for drivers";
     } else {
