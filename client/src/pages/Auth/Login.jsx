@@ -17,7 +17,7 @@ import RoleInfoPanel from "../../components/Auth/RoleInfoPanel";
 const Login = () => {
   const { role } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated, updateUser } = useAuth();
+  const { isAuthenticated, updateUser } = useAuth(); // ✅ Keep as is
 
   const [formData, setFormData] = useState({
     email: "",
@@ -98,7 +98,6 @@ const Login = () => {
     });
 
     setErrors({});
-
     setLoading(false);
   };
 
@@ -141,64 +140,102 @@ const Login = () => {
       if (response.data) {
         const { token, message } = response.data;
 
-        // Get user data from response (different keys for different roles)
-        const userData =
-          response.data.admin ||
-          response.data.customer ||
-          response.data.driver ||
-          response.data.carOwner;
-
-        // Store token and user data
+        // ✅ Store token in localStorage (as your UserContext expects)
         localStorage.setItem("token", token);
 
-        // Create standardized user object
-        const standardizedUser = {
-          id: userData.id,
-          name: userData.fullname,
-          email: userData.email,
-          phone: userData.phone,
-          address: userData.address,
-          role: role,
-          ...(userData.licenseNumber && {
-            licenseNumber: userData.licenseNumber,
-          }),
-          ...(userData.status && { status: userData.status }),
-          ...(userData.rating && { rating: userData.rating }),
-          ...(userData.totalRides && { totalRides: userData.totalRides }),
+        // ✅ Create user object with role and user data
+        const userData = {
+          ...(response.data[role] || response.data.admin),
+          role: role, // ✅ Add role to user data
         };
 
-        // Update auth context
-        updateUser(standardizedUser);
+        // ✅ Use updateUser with just the userData (as your context expects)
+        updateUser(userData);
 
-        toast.success(message || `Welcome back, ${standardizedUser.name}!`);
+        toast.success(message || "Login successful!");
 
-        // Navigate to role-specific dashboard
-        navigate(`/dashboard/${role}`);
+        // Redirect based on role
+        setTimeout(() => {
+          navigate(`/dashboard/${role}`);
+        }, 1000);
       }
     } catch (error) {
       console.error("Login error:", error);
 
-      // ✅ Enhanced error handling - Prevent navigation, only show toasts
-      if (error.type === "NETWORK_ERROR") {
+      if (error.response) {
+        const { status, data } = error.response;
+
+        if (status === 401) {
+          // Invalid credentials
+          setErrors({
+            email: "Invalid email or password",
+            password: "Invalid email or password",
+          });
+          toast.error("Invalid email or password. Please try again.");
+        } else if (status === 403) {
+          // ✅ Handle driver approval status
+          const message = data.message;
+          const driverStatus = data.status;
+
+          if (driverStatus === "pending") {
+            toast.error(
+              "Your account is pending admin approval. Please wait.",
+              {
+                duration: 6000,
+              }
+            );
+            // Show additional info toast
+            setTimeout(() => {
+              toast("You will receive an email notification once approved.", {
+                icon: "📧",
+                duration: 4000,
+              });
+            }, 1000);
+          } else if (driverStatus === "rejected") {
+            toast.error(
+              "Your account has been rejected. Please contact support.",
+              {
+                duration: 6000,
+              }
+            );
+            // Show contact info
+            setTimeout(() => {
+              toast(
+                "Contact support for more information about your application.",
+                {
+                  icon: "📞",
+                  duration: 4000,
+                }
+              );
+            }, 1000);
+          } else {
+            toast.error(message || "Account not approved for login.", {
+              duration: 5000,
+            });
+          }
+
+          // Clear password field for security
+          setFormData((prev) => ({ ...prev, password: "" }));
+        } else if (status === 400) {
+          const message = data.message;
+
+          if (message === "Email and password are required") {
+            toast.error("Please fill in all required fields.");
+          } else {
+            toast.error(message || "Login failed. Please check your input.");
+          }
+        } else if (status === 500) {
+          toast.error("Server error. Please try again later.");
+        } else {
+          toast.error(data?.message || "Login failed. Please try again.");
+        }
+      } else if (error.type === "NETWORK_ERROR") {
         toast.error("Network error. Please check your connection.");
       } else if (error.type === "TIMEOUT_ERROR") {
         toast.error("Request timeout. Please try again.");
-      } else if (error.status === 401) {
-        toast.error("Invalid email or password");
-        // ✅ Clear password field for security
-        setFormData((prev) => ({ ...prev, password: "" }));
-      } else if (error.status === 400) {
-        toast.error(error.message || "Please check your input");
-      } else if (error.status === 404) {
-        toast.error("User not found. Please check your credentials.");
-      } else if (error.status === 500) {
-        toast.error("Server error. Please try again later.");
       } else {
-        toast.error(error.message || "Login failed. Please try again.");
+        toast.error("Login failed. Please try again.");
       }
-
-      // ✅ Ensure we stay on the current login page - no navigation
-      // Do not call navigate() here - just show toast and stay put
     } finally {
       setLoading(false);
     }
@@ -237,7 +274,9 @@ const Login = () => {
         </div>
 
         {/* Right Side - Role Information */}
-        <RoleInfoPanel roleConfig={roleConfig} />
+        <div className="hidden lg:block lg:w-3/5">
+          <RoleInfoPanel roleConfig={roleConfig} />
+        </div>
       </div>
     </div>
   );
