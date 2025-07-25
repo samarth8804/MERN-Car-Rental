@@ -45,7 +45,7 @@ export const roles = [
       subtitle: "Join our network of professional drivers",
       highlights: [
         "Flexible working hours",
-        "Build your reputation",
+        "Admin approval required", // ✅ Updated to mention approval
         "Safety guaranteed",
       ],
     },
