@@ -2,7 +2,7 @@ import { FaCheck } from "react-icons/fa";
 
 const RoleInfoPanel = ({ roleConfig }) => {
   return (
-    <div className="hidden lg:flex lg:w-3/5 relative overflow-hidden bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700">
+    <div className="w-full h-full flex flex-col relative overflow-hidden bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700">
       {/* Beautiful Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600/90 via-purple-600/90 to-indigo-700/90"></div>
 
