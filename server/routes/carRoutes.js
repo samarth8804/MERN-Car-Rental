@@ -1,7 +1,16 @@
 const express = require("express");
-const { getCarDetails, deleteCar } = require("../controllers/carController");
+const {
+  getCarDetails,
+  deleteCar,
+  getAvailableCities,
+  getCarsByCity,
+} = require("../controllers/carController");
 const { protect } = require("../middlewares/authMiddleware");
 const router = express.Router();
+
+router.get("/cities", getAvailableCities);
+
+router.get("/get-cars/:city", getCarsByCity);
 
 router.get(
   "/car-details/:id",
