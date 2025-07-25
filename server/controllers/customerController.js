@@ -6,12 +6,21 @@ const { nanoid } = require("nanoid");
 
 exports.getAvailableCars = async (req, res) => {
   try {
-    const cars = await Cars.find({
+    const { city } = req.query;
+
+    let filter = {
       isAvailable: true,
       status: "approved",
-    })
+    };
+
+    if (city) {
+      filter.city = city; // Filter by city if provided
+    }
+
+    // Fetch available cars with optional city filter
+    const cars = await Cars.find(filter)
       .select(
-        "brand model year licensePlate pricePerKm pricePerDay imageUrl isAvailable"
+        "brand model year licensePlate pricePerKm pricePerDay imageUrl isAvailable city"
       )
       .sort({
         createdAt: -1,
@@ -20,7 +29,9 @@ exports.getAvailableCars = async (req, res) => {
     if (cars.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "No available cars found",
+        message: city
+          ? `No available cars found in ${city}`
+          : "No available cars found",
       });
     }
 
@@ -110,14 +121,17 @@ exports.bookCar = async (req, res) => {
       });
     }
 
-    const drivers = await Driver.find({ status: "approved" }).sort({
+    const drivers = await Driver.find({
+      status: "approved",
+      city: car.city,
+    }).sort({
       rating: -1,
     });
 
     if (drivers.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "No drivers available",
+        message: `No drivers available in ${car.city}`,
       });
     }
 
