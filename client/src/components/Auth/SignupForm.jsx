@@ -10,6 +10,7 @@ import {
   FaUserPlus,
   FaSpinner,
   FaIdCard,
+  FaCity,
 } from "react-icons/fa";
 import TermsCheckbox from "./TermsCheckbox"; // ✅ Import terms checkbox
 
@@ -25,6 +26,34 @@ const SignupForm = ({
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const indianCities = [
+    "Mumbai",
+    "Delhi",
+    "Bangalore",
+    "Chennai",
+    "Kolkata",
+    "Hyderabad",
+    "Pune",
+    "Ahmedabad",
+    "Jaipur",
+    "Surat",
+    "Lucknow",
+    "Kanpur",
+    "Nagpur",
+    "Indore",
+    "Thane",
+    "Bhopal",
+    "Visakhapatnam",
+    "Pimpri-Chinchwad",
+    "Patna",
+    "Vadodara",
+    "Kochi",
+    "Coimbatore",
+    "Agra",
+    "Madurai",
+    "Nashik",
+  ];
 
   // Helper function to format license display
   const formatLicenseDisplay = (value) => {
@@ -162,6 +191,47 @@ const SignupForm = ({
             </p>
           )}
         </div>
+
+        {/* ✅ CITY FIELD FOR DRIVERS */}
+        {role === "driver" && (
+          <div>
+            <label
+              htmlFor="city"
+              className="block text-sm font-semibold text-gray-700 mb-2"
+            >
+              <FaCity className="inline mr-2 text-gray-500" />
+              Operating City
+            </label>
+            <select
+              id="city"
+              name="city"
+              value={formData.city || ""}
+              onChange={onInputChange}
+              className={`appearance-none block w-full px-4 py-3 border-2 ${
+                errors.city
+                  ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                  : "border-gray-200 focus:ring-blue-500 focus:border-blue-500"
+              } rounded-xl placeholder-gray-400 focus:outline-none focus:ring-2 transition duration-300 text-base bg-white`}
+              disabled={loading}
+            >
+              <option value="">Select your operating city</option>
+              {indianCities.map((city) => (
+                <option key={city} value={city}>
+                  {city}
+                </option>
+              ))}
+            </select>
+            {errors.city && (
+              <p className="mt-2 text-sm text-red-600 flex items-center">
+                <span className="w-4 h-4 mr-1">⚠️</span>
+                {errors.city}
+              </p>
+            )}
+            <p className="mt-1 text-xs text-gray-500">
+              Select the city where you want to provide driving services
+            </p>
+          </div>
+        )}
 
         {/* License Number Field (for drivers only) */}
         {role === "driver" && (
