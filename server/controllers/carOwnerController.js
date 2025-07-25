@@ -11,6 +11,7 @@ exports.addCar = async (req, res) => {
       pricePerDay,
       pricePerKm,
       imageUrl,
+      city,
     } = req.body;
 
     // Validate required fields
@@ -21,7 +22,8 @@ exports.addCar = async (req, res) => {
       !licensePlate ||
       !pricePerDay ||
       !pricePerKm ||
-      !imageUrl
+      !imageUrl ||
+      !city
     ) {
       return res.status(400).json({
         success: false,
@@ -55,6 +57,7 @@ exports.addCar = async (req, res) => {
       pricePerDay,
       pricePerKm,
       imageUrl,
+      city,
       ownerId: req.user._id, // From auth middleware
     });
 
@@ -112,6 +115,7 @@ exports.updateCar = async (req, res) => {
       pricePerDay,
       pricePerKm,
       imageUrl,
+      city,
     } = req.body;
 
     // Validate required fields
@@ -122,7 +126,8 @@ exports.updateCar = async (req, res) => {
       !licensePlate ||
       !pricePerDay ||
       !pricePerKm ||
-      !imageUrl
+      !imageUrl ||
+      !city
     ) {
       return res.status(400).json({
         success: false,
@@ -166,6 +171,7 @@ exports.updateCar = async (req, res) => {
     car.pricePerDay = pricePerDay;
     car.pricePerKm = pricePerKm;
     car.imageUrl = imageUrl;
+    car.city = city;
     car.status = "pending"; // Reset status to pending on update
     car.updatedAt = new Date(); // Update the timestamp
 
