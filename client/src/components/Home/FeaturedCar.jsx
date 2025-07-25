@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { FaArrowRight, FaSpinner } from "react-icons/fa";
 import CarsCard from "../Cards/CarsCard";
+import CitySelector from "../common/CitySelector"; // ✅ ADD CITY SELECTOR
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPaths";
 
@@ -8,23 +9,24 @@ const FeaturedCars = ({ onOpenRoleModal }) => {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedCity, setSelectedCity] = useState(""); // ✅ ADD CITY STATE
 
   // Fetch cars from backend using axios instance
-  const fetchCars = async () => {
+  const fetchCars = async (city = "") => {
     try {
       setLoading(true);
       setError(null);
 
       console.log("Fetching cars using axios instance...");
-      console.log("API Path:", API_PATHS.CUSTOMER.GET_AVAILABLE_CARS);
-      console.log(
-        "Full URL:",
-        `${axiosInstance.defaults.baseURL}/${API_PATHS.CUSTOMER.GET_AVAILABLE_CARS}`
-      );
 
-      const response = await axiosInstance.get(
-        API_PATHS.CUSTOMER.GET_AVAILABLE_CARS
-      );
+      // ✅ USE CITY FILTER IF SELECTED
+      const url = city
+        ? `${API_PATHS.CUSTOMER.GET_AVAILABLE_CARS}?city=${city}`
+        : API_PATHS.CUSTOMER.GET_AVAILABLE_CARS;
+
+      console.log("API URL:", url);
+
+      const response = await axiosInstance.get(url);
 
       console.log("API Response:", response.data);
 
@@ -62,6 +64,12 @@ const FeaturedCars = ({ onOpenRoleModal }) => {
     fetchCars();
   }, []);
 
+  // ✅ HANDLE CITY CHANGE
+  const handleCityChange = (city) => {
+    setSelectedCity(city);
+    fetchCars(city);
+  };
+
   const handleBookClick = (action, car) => {
     onOpenRoleModal(action);
   };
@@ -78,6 +86,15 @@ const FeaturedCars = ({ onOpenRoleModal }) => {
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Explore our premium collection of vehicles available for rent
             </p>
+          </div>
+
+          {/* ✅ ADD CITY SELECTOR */}
+          <div className="flex justify-center mb-8">
+            <CitySelector
+              selectedCity={selectedCity}
+              onCityChange={handleCityChange}
+              className="max-w-md"
+            />
           </div>
 
           <div className="flex justify-center items-center py-20">
@@ -105,6 +122,15 @@ const FeaturedCars = ({ onOpenRoleModal }) => {
             </p>
           </div>
 
+          {/* ✅ ADD CITY SELECTOR */}
+          <div className="flex justify-center mb-8">
+            <CitySelector
+              selectedCity={selectedCity}
+              onCityChange={handleCityChange}
+              className="max-w-md"
+            />
+          </div>
+
           <div className="text-center py-20">
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 max-w-md mx-auto mb-6">
               <div className="text-6xl mb-4">🚗</div>
@@ -115,7 +141,7 @@ const FeaturedCars = ({ onOpenRoleModal }) => {
                 Please check your connection and try again
               </div>
               <button
-                onClick={fetchCars}
+                onClick={() => fetchCars(selectedCity)}
                 className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300 font-medium"
               >
                 Try Again
@@ -141,13 +167,24 @@ const FeaturedCars = ({ onOpenRoleModal }) => {
             </p>
           </div>
 
+          {/* ✅ ADD CITY SELECTOR */}
+          <div className="flex justify-center mb-8">
+            <CitySelector
+              selectedCity={selectedCity}
+              onCityChange={handleCityChange}
+              className="max-w-md"
+            />
+          </div>
+
           <div className="text-center py-20">
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 max-w-md mx-auto mb-6">
               <div className="text-yellow-600 text-lg mb-2">
                 📋 No Cars Available
               </div>
               <div className="text-gray-600 text-sm">
-                There are currently no cars available for rent
+                {selectedCity
+                  ? `No cars available in ${selectedCity}`
+                  : "There are currently no cars available for rent"}
               </div>
             </div>
             <button
@@ -177,6 +214,15 @@ const FeaturedCars = ({ onOpenRoleModal }) => {
           </p>
         </div>
 
+        {/* ✅ ADD CITY SELECTOR */}
+        <div className="flex justify-center mb-12">
+          <CitySelector
+            selectedCity={selectedCity}
+            onCityChange={handleCityChange}
+            className="max-w-md"
+          />
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {featuredCars.map((car) => (
             <CarsCard
@@ -194,7 +240,10 @@ const FeaturedCars = ({ onOpenRoleModal }) => {
             onClick={() => onOpenRoleModal("signup")}
             className="bg-gray-900 text-white px-8 py-4 rounded-full font-medium hover:bg-gray-800 transition duration-300 inline-flex items-center space-x-2"
           >
-            <span>View All Cars ({cars.length} available)</span>
+            <span>
+              View All Cars ({cars.length} available
+              {selectedCity ? ` in ${selectedCity}` : ""})
+            </span>
             <FaArrowRight />
           </button>
         </div>
