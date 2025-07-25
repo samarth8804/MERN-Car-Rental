@@ -1,12 +1,19 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { roles } from "../../utils/data";
 
 const RoleSwitcher = ({ currentRole, onRoleSwitch }) => {
+  const location = useLocation();
+
+  // ✅ Determine if we're on signup or login page
+  const isSignupPage = location.pathname.includes("/signup");
+  const basePath = isSignupPage ? "/signup" : "/login";
+
   const handleRoleSwitch = (roleId) => {
     if (onRoleSwitch) {
       onRoleSwitch();
     }
   };
+
   return (
     <>
       {/* Role Switch */}
@@ -18,7 +25,7 @@ const RoleSwitcher = ({ currentRole, onRoleSwitch }) => {
             .map((roleItem) => (
               <Link
                 key={roleItem.id}
-                to={`/login/${roleItem.id}`}
+                to={`${basePath}/${roleItem.id}`} // ✅ Dynamic path based on current page
                 onClick={() => handleRoleSwitch(roleItem.id)}
                 className={`px-3 py-2 rounded-full text-xs font-medium transition-all duration-300 ${
                   currentRole === roleItem.id
@@ -32,8 +39,8 @@ const RoleSwitcher = ({ currentRole, onRoleSwitch }) => {
         </div>
       </div>
 
-      {/* Admin Access */}
-      {currentRole !== "admin" && (
+      {/* Admin Access - Only show on login pages */}
+      {currentRole !== "admin" && !isSignupPage && (
         <div className="mt-4 text-center">
           <Link
             to="/login/admin"
