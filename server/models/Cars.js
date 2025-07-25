@@ -7,6 +7,37 @@ const carSchema = new mongoose.Schema(
     model: { type: String, required: true },
     licensePlate: { type: String, required: true, unique: true },
     year: { type: Number, required: true, min: 2015 },
+    city: {
+      type: String,
+      required: true,
+      trim: true,
+      enum: [
+        "Mumbai",
+        "Delhi",
+        "Bangalore",
+        "Chennai",
+        "Kolkata",
+        "Hyderabad",
+        "Pune",
+        "Ahmedabad",
+        "Jaipur",
+        "Lucknow",
+        "Kanpur",
+        "Nagpur",
+        "Indore",
+        "Thane",
+        "Bhopal",
+        "Coimbatore",
+        "Visakhapatnam",
+        "Vadodara",
+        "Patna",
+        "Ghaziabad",
+        "Ludhiana",
+        "Agra",
+        "Madurai",
+        "Nashik",
+      ],
+    },
     ownerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "CarOwner",
@@ -29,5 +60,8 @@ const carSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Add index for city-based queries
+carSchema.index({ city: 1,  status: 1, isAvailable: 1 });
 
 module.exports = mongoose.model("Car", carSchema);
