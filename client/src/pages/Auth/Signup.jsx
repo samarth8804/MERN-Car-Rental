@@ -41,6 +41,7 @@ const Signup = () => {
     password: "",
     confirmPassword: "",
     licenseNumber: "", // Only for drivers
+    city: "",
     otp: "",
     acceptTerms: false, // ✅ Added terms acceptance
   });
@@ -81,6 +82,7 @@ const Signup = () => {
       password: "",
       confirmPassword: "",
       licenseNumber: "",
+      city: "",
       otp: "",
       acceptTerms: false, // ✅ Reset terms acceptance
     });
@@ -214,7 +216,10 @@ const Signup = () => {
         phone: formData.phone,
         address: formData.address,
         password: formData.password,
-        ...(role === "driver" && { licenseNumber: formData.licenseNumber }),
+        ...(role === "driver" && {
+          licenseNumber: formData.licenseNumber,
+          city: formData.city,
+        }),
       };
 
       const response = await axiosInstance.post(endpoint, requestData);
@@ -258,7 +263,10 @@ const Signup = () => {
         address: formData.address,
         password: formData.password,
         otp: formData.otp,
-        ...(role === "driver" && { licenseNumber: formData.licenseNumber }),
+        ...(role === "driver" && {
+          licenseNumber: formData.licenseNumber,
+          city: formData.city,
+        }),
       };
 
       const response = await axiosInstance.post(endpoint, requestData);
@@ -276,6 +284,7 @@ const Signup = () => {
           password: "",
           confirmPassword: "",
           licenseNumber: "",
+          city: "",
           otp: "",
           acceptTerms: false, // ✅ Reset terms acceptance
         });
