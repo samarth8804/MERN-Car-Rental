@@ -46,6 +46,8 @@ export const API_PATHS = {
   CAR: {
     GET_CAR_DETAILS: (carId) => `api/v1/car/car-details/${carId}`,
     DELETE_CAR: (carId) => `api/v1/car/delete-car/${carId}`,
+    GET_CITIES: "api/v1/car/cities",
+    GET_CARS_BY_CITY: (city) => `api/v1/car/get-cars/${city}`,
   },
   // Booking
   BOOKING: {
