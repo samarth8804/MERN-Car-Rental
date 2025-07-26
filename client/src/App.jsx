@@ -21,6 +21,11 @@ import CustomerDashboard from "./pages/Dashboard/CustomerDashboard";
 import CarOwnerDashboard from "./pages/Dashboard/CarOwnerDashboard";
 import DriverDashboard from "./pages/Dashboard/DriverDashboard";
 
+// Booking pages
+import CarBookingPage from "./pages/Booking/CarBookingPage";
+import BookingHistory from "./pages/Booking/BookingHistory";
+import BookingDetails from "./pages/Booking/BookingDetails";
+
 // Error pages
 import NotFound from "./pages/Error/NotFound";
 import Unauthorized from "./pages/Error/Unauthorized";
@@ -78,6 +83,31 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles="driver">
                   <DriverDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/book-car/:carId"
+              element={
+                <ProtectedRoute allowedRoles="customer">
+                  <CarBookingPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/booking-history"
+              element={
+                <ProtectedRoute allowedRoles="customer">
+                  <BookingHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/booking-details/:bookingId"
+              element={
+                <ProtectedRoute allowedRoles="customer">
+                  <BookingDetails />
                 </ProtectedRoute>
               }
             />
