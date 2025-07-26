@@ -235,7 +235,7 @@ exports.getCarsByCity = async (req, res) => {
       success: true,
       count: cars.length,
       city: city,
-      data: cars,
+      cars: cars,
     });
   } catch (error) {
     console.error("Error fetching cars by city:", error);
