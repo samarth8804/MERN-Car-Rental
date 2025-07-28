@@ -4,41 +4,119 @@ const Customer = require("../models/Customer");
 const Driver = require("../models/Driver");
 const { nanoid } = require("nanoid");
 
+// Fixed function to handle same-day bookings
 exports.getAvailableCars = async (req, res) => {
   try {
-    const { city } = req.query;
+    const { startDate, endDate } = req.query;
 
-    let filter = {
-      isAvailable: true,
-      status: "approved",
-    };
-
-    if (city) {
-      filter.city = city; // Filter by city if provided
-    }
-
-    // Fetch available cars with optional city filter
-    const cars = await Cars.find(filter)
+    // Get all approved cars
+    const allCars = await Cars.find({ status: "approved" })
       .select(
-        "brand model year licensePlate pricePerKm pricePerDay imageUrl isAvailable city"
+        "brand model year licensePlate pricePerKm pricePerDay imageUrl city ownerId"
       )
+      .populate("ownerId", "fullname phone")
       .sort({
         createdAt: -1,
       });
 
-    if (cars.length === 0) {
+    if (allCars.length === 0) {
       return res.status(404).json({
         success: false,
-        message: city
-          ? `No available cars found in ${city}`
-          : "No available cars found",
+        message: "No approved cars found",
+      });
+    }
+
+    let availableCars = allCars;
+
+    // If dates are provided, filter based on booking conflicts
+    if (startDate && endDate) {
+      const requestedStartDate = new Date(startDate);
+      const requestedEndDate = new Date(endDate);
+
+      // Fixed: Allow same-day bookings - end date can be same as start date
+      if (requestedEndDate < requestedStartDate) {
+        return res.status(400).json({
+          success: false,
+          message: "End date cannot be before start date",
+        });
+      }
+
+      // Fixed: Allow today's date - only prevent actual past dates
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Reset to start of day
+
+      const startDateOnly = new Date(requestedStartDate);
+      startDateOnly.setHours(0, 0, 0, 0); // Reset to start of day
+
+      if (startDateOnly < today) {
+        return res.status(400).json({
+          success: false,
+          message: "Start date cannot be in the past",
+        });
+      }
+
+      // Filter cars that don't have conflicting bookings
+      const availableCarIds = await Promise.all(
+        allCars.map(async (car) => {
+          const conflictingBooking = await Bookings.findOne({
+            car: car._id,
+            isCancelled: false,
+            isCompleted: false,
+            $or: [
+              {
+                // Fixed: Check for overlapping bookings including same-day bookings
+                $and: [
+                  { startDate: { $lte: requestedEndDate } },
+                  { endDate: { $gte: requestedStartDate } },
+                ],
+              },
+            ],
+          });
+
+          return conflictingBooking ? null : car._id;
+        })
+      );
+
+      // Filter out cars with conflicts
+      availableCars = allCars.filter((car) =>
+        availableCarIds.includes(car._id)
+      );
+
+      // Calculate duration for response message
+      const daysDifference = Math.ceil(
+        (requestedEndDate - requestedStartDate) / (1000 * 60 * 60 * 24)
+      );
+      const isSameDay = daysDifference === 0;
+      const duration = isSameDay ? 1 : daysDifference;
+
+      return res.status(200).json({
+        success: true,
+        message: isSameDay
+          ? `Cars available for same-day rental (${new Date(
+              startDate
+            ).toLocaleDateString()})`
+          : `Cars available from ${new Date(
+              startDate
+            ).toLocaleDateString()} to ${new Date(
+              endDate
+            ).toLocaleDateString()} (${duration} days)`,
+        cars: availableCars,
+        totalCount: availableCars.length,
+        dateRange: {
+          startDate,
+          endDate,
+          duration,
+          isSameDay,
+        },
       });
     }
 
     return res.status(200).json({
       success: true,
-      message: "Available cars fetched successfully",
-      cars,
+      message: "All approved cars fetched successfully",
+      cars: availableCars,
+      totalCount: availableCars.length,
+      dateRange: null,
     });
   } catch (error) {
     console.error("Error fetching available cars:", error);
@@ -50,6 +128,7 @@ exports.getAvailableCars = async (req, res) => {
   }
 };
 
+// Enhanced booking function with same-day booking support
 exports.bookCar = async (req, res) => {
   try {
     const {
@@ -83,44 +162,67 @@ exports.bookCar = async (req, res) => {
       });
     }
 
-    // Check for startDate and endDate validity
-    if (new Date(startDate) >= new Date(endDate)) {
+    const requestedStartDate = new Date(startDate);
+    const requestedEndDate = new Date(endDate);
+
+    // Fixed: Allow same-day bookings - end date can be same as start date
+    if (requestedEndDate < requestedStartDate) {
       return res.status(400).json({
         success: false,
-        message: "End date must be after start date",
+        message: "End date cannot be before start date",
       });
     }
 
+    // Fixed: Allow today's date - only prevent actual past dates
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset to start of day
+
+    const startDateOnly = new Date(requestedStartDate);
+    startDateOnly.setHours(0, 0, 0, 0); // Reset to start of day
+
+    if (startDateOnly < today) {
+      return res.status(400).json({
+        success: false,
+        message: "Start date cannot be in the past",
+      });
+    }
+
+    // Check if car exists and is approved
     const car = await Cars.findOne({
       _id: carId,
       status: "approved",
-      isAvailable: true,
     });
 
     if (!car) {
       return res.status(404).json({
         success: false,
-        message: "Car not found or not available",
+        message: "Car not found or not approved",
       });
     }
 
-    // Check if the car is already booked for the given dates
-
-    const overlappingBooking = await Bookings.findOne({
+    // Check for date conflicts with improved overlap detection
+    const conflictingBooking = await Bookings.findOne({
       car: carId,
       isCancelled: false,
       isCompleted: false,
-      startDate: { $lte: new Date(endDate) },
-      endDate: { $gte: new Date(startDate) },
+      $and: [
+        { startDate: { $lte: requestedEndDate } },
+        { endDate: { $gte: requestedStartDate } },
+      ],
     });
 
-    if (overlappingBooking) {
+    if (conflictingBooking) {
       return res.status(400).json({
         success: false,
-        message: "Car is already booked for the selected dates",
+        message: `Car is already booked from ${conflictingBooking.startDate.toLocaleDateString()} to ${conflictingBooking.endDate.toLocaleDateString()}`,
+        conflictingBooking: {
+          startDate: conflictingBooking.startDate,
+          endDate: conflictingBooking.endDate,
+        },
       });
     }
 
+    // Find available driver for the same dates
     const drivers = await Driver.find({
       status: "approved",
       city: car.city,
@@ -135,22 +237,22 @@ exports.bookCar = async (req, res) => {
       });
     }
 
-    // check drivers availability for given dates
-
     let selectedDriver = null;
 
     for (const driver of drivers) {
-      const isBusy = await Bookings.exists({
+      const driverConflict = await Bookings.exists({
         driver: driver._id,
         isCancelled: false,
         isCompleted: false,
-        startDate: { $lte: new Date(endDate) },
-        endDate: { $gte: new Date(startDate) },
+        $and: [
+          { startDate: { $lte: requestedEndDate } },
+          { endDate: { $gte: requestedStartDate } },
+        ],
       });
 
-      if (!isBusy) {
+      if (!driverConflict) {
         selectedDriver = driver;
-        break; // Pick the first(highest-rated) available driver
+        break;
       }
     }
 
@@ -161,13 +263,13 @@ exports.bookCar = async (req, res) => {
       });
     }
 
-    // Create a new booking
+    // Create the booking
     const newBooking = new Bookings({
       customer: customerId,
       driver: selectedDriver._id,
       car: carId,
-      startDate,
-      endDate,
+      startDate: requestedStartDate,
+      endDate: requestedEndDate,
       bookingType,
       isAC,
       pickupLocation: {
@@ -187,16 +289,26 @@ exports.bookCar = async (req, res) => {
       uniqueCode: nanoid(10),
     });
 
-    // Mark the car as unavailable
-    car.isAvailable = false;
-
     await newBooking.save();
-    await car.save();
+
+    // Calculate duration for response
+    const daysDifference = Math.ceil(
+      (requestedEndDate - requestedStartDate) / (1000 * 60 * 60 * 24)
+    );
+    const isSameDay = daysDifference === 0;
 
     return res.status(201).json({
       success: true,
-      message: "Car booked successfully",
+      message: isSameDay
+        ? "Car booked successfully for same-day rental!"
+        : `Car booked successfully for ${
+            daysDifference === 0 ? 1 : daysDifference
+          } days!`,
       booking: newBooking,
+      bookingDetails: {
+        duration: isSameDay ? 1 : daysDifference,
+        isSameDay,
+      },
     });
   } catch (error) {
     console.error("Error booking car:", error);
