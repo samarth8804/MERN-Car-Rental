@@ -1,4 +1,19 @@
-import { FaHome, FaUserTie, FaCog, FaRegUser } from "react-icons/fa";
+import {
+  FaHome,
+  FaUserTie,
+  FaCog,
+  FaRegUser,
+  FaCar,
+  FaHistory,
+  FaUser,
+  FaChartBar,
+  FaUsers,
+  FaShieldAlt,
+  FaClipboardList,
+  FaWallet,
+  FaRoute,
+  FaCogs,
+} from "react-icons/fa";
 import { GiHomeGarage } from "react-icons/gi";
 
 export const roles = [
@@ -45,7 +60,7 @@ export const roles = [
       subtitle: "Join our network of professional drivers",
       highlights: [
         "Flexible working hours",
-        "Admin approval required", // ✅ Updated to mention approval
+        "Admin approval required",
         "Safety guaranteed",
       ],
     },
@@ -63,3 +78,197 @@ export const roles = [
     },
   },
 ];
+
+// Dashboard Tab Configurations
+export const dashboardTabs = {
+  customer: [
+    {
+      id: "cars",
+      label: "Available Cars",
+      icon: FaCar,
+      description: "Browse and book cars",
+      getBadge: (data) => (data.cars?.length > 0 ? data.cars.length : null),
+    },
+    {
+      id: "bookings",
+      label: "My Bookings",
+      icon: FaHistory,
+      description: "View your booking history",
+      getBadge: (data) =>
+        data.bookings?.filter((b) => !b.isCompleted && !b.isCancelled).length ||
+        null,
+    },
+    {
+      id: "profile",
+      label: "Profile",
+      icon: FaUser,
+      description: "Manage your account",
+      getBadge: () => null,
+    },
+  ],
+
+  "car-owner": [
+    {
+      id: "overview",
+      label: "Overview",
+      icon: FaChartBar,
+      description: "Dashboard overview",
+      getBadge: () => null,
+    },
+    {
+      id: "cars",
+      label: "My Cars",
+      icon: FaCar,
+      description: "Manage your vehicles",
+      getBadge: (data) => data.cars?.length || null,
+    },
+    {
+      id: "bookings",
+      label: "Bookings",
+      icon: FaClipboardList,
+      description: "View car bookings",
+      getBadge: (data) =>
+        data.bookings?.filter((b) => b.status === "pending").length || null,
+    },
+    {
+      id: "earnings",
+      label: "Earnings",
+      icon: FaWallet,
+      description: "Track your income",
+      getBadge: () => null,
+    },
+    {
+      id: "profile",
+      label: "Profile",
+      icon: FaUser,
+      description: "Manage your account",
+      getBadge: () => null,
+    },
+  ],
+
+  driver: [
+    {
+      id: "overview",
+      label: "Overview",
+      icon: FaChartBar,
+      description: "Dashboard overview",
+      getBadge: () => null,
+    },
+    {
+      id: "rides",
+      label: "My Rides",
+      icon: FaRoute,
+      description: "View assigned rides",
+      getBadge: (data) =>
+        data.rides?.filter((r) => r.status === "active").length || null,
+    },
+    {
+      id: "bookings",
+      label: "Bookings",
+      icon: FaClipboardList,
+      description: "Available bookings",
+      getBadge: (data) => data.availableBookings?.length || null,
+    },
+    {
+      id: "earnings",
+      label: "Earnings",
+      icon: FaWallet,
+      description: "Track your income",
+      getBadge: () => null,
+    },
+    {
+      id: "profile",
+      label: "Profile",
+      icon: FaUser,
+      description: "Manage your account",
+      getBadge: () => null,
+    },
+  ],
+
+  admin: [
+    {
+      id: "overview",
+      label: "Overview",
+      icon: FaChartBar,
+      description: "System overview",
+      getBadge: () => null,
+    },
+    {
+      id: "users",
+      label: "Users",
+      icon: FaUsers,
+      description: "Manage users",
+      getBadge: (data) => data.pendingUsers?.length || null,
+    },
+    {
+      id: "cars",
+      label: "Cars",
+      icon: FaCar,
+      description: "Manage vehicles",
+      getBadge: (data) => data.pendingCars?.length || null,
+    },
+    {
+      id: "bookings",
+      label: "Bookings",
+      icon: FaClipboardList,
+      description: "Manage bookings",
+      getBadge: (data) => data.disputedBookings?.length || null,
+    },
+    {
+      id: "security",
+      label: "Security",
+      icon: FaShieldAlt,
+      description: "Security settings",
+      getBadge: (data) => data.securityAlerts?.length || null,
+    },
+    {
+      id: "settings",
+      label: "Settings",
+      icon: FaCogs,
+      description: "System settings",
+      getBadge: () => null,
+    },
+  ],
+};
+
+// Helper function to get tabs for a specific role
+export const getDashboardTabs = (userRole, data = {}) => {
+  const tabs = dashboardTabs[userRole] || [];
+
+  return tabs.map((tab) => ({
+    ...tab,
+    badge: tab.getBadge ? tab.getBadge(data) : null,
+  }));
+};
+
+// Enhanced booking filter configurations
+export const bookingFilters = {
+  customer: [
+    { key: "all", label: "All Bookings" },
+    { key: "active", label: "Active" },
+    { key: "upcoming", label: "Upcoming" },
+    { key: "completed", label: "Completed" },
+    { key: "cancelled", label: "Cancelled" },
+  ],
+  "car-owner": [
+    { key: "all", label: "All Bookings" },
+    { key: "pending", label: "Pending" },
+    { key: "confirmed", label: "Confirmed" },
+    { key: "active", label: "Active" },
+    { key: "completed", label: "Completed" },
+    { key: "cancelled", label: "Cancelled" },
+  ],
+  driver: [
+    { key: "all", label: "All Rides" },
+    { key: "assigned", label: "Assigned" },
+    { key: "active", label: "Active" },
+    { key: "completed", label: "Completed" },
+  ],
+  admin: [
+    { key: "all", label: "All Bookings" },
+    { key: "pending", label: "Pending" },
+    { key: "active", label: "Active" },
+    { key: "disputed", label: "Disputed" },
+    { key: "completed", label: "Completed" },
+  ],
+};
