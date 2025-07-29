@@ -57,11 +57,14 @@ const carSchema = new mongoose.Schema(
       ref: "Admin",
       default: null,
     },
+    rating: { type: Number, default: 0, min: 0, max: 5 },
+    ratingCount: { type: Number, default: 0 },
+    totalRides: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
 
 // Add index for city-based queries
-carSchema.index({ city: 1,  status: 1, isAvailable: 1 });
+carSchema.index({ city: 1, status: 1, isAvailable: 1 });
 
 module.exports = mongoose.model("Car", carSchema);
