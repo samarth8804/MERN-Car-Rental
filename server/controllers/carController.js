@@ -37,6 +37,7 @@ exports.getCarDetails = async (req, res) => {
       pricePerKm: car.pricePerKm,
       imageUrl: car.imageUrl,
       isAvailable: car.isAvailable,
+      rating: car.rating,
       city: car.city,
     };
 
