@@ -1,22 +1,22 @@
-import { FaStar, FaCar, FaMapMarkerAlt } from "react-icons/fa";
+import React from "react";
+import { FaStar, FaMapMarkerAlt, FaCar } from "react-icons/fa";
 import { MdDirectionsCar } from "react-icons/md";
 
 const CarsCard = ({
   car,
   onBookClick,
+  buttonAction,
   showBookButton = true,
-  buttonText = "Book Now",
-  buttonAction = "signup",
 }) => {
   return (
-    <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition duration-500 overflow-hidden border hover:border-blue-200">
-      {/* Car Image */}
-      <div className="relative h-48 overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 group">
+      {/* Car Image Container */}
+      <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-2xl overflow-hidden">
         {car.imageUrl ? (
           <img
             src={car.imageUrl}
             alt={`${car.brand} ${car.model}`}
-            className="w-full h-full object-cover group-hover:scale-110 transition duration-300"
+            className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
             onError={(e) => {
               e.target.style.display = "none";
               e.target.nextSibling.style.display = "flex";
@@ -24,7 +24,7 @@ const CarsCard = ({
           />
         ) : null}
 
-        {/* Fallback gradient background with car icon */}
+        {/* Fallback icon when no image */}
         <div
           className={`${
             car.imageUrl ? "hidden" : "flex"
@@ -34,12 +34,17 @@ const CarsCard = ({
           <MdDirectionsCar className="text-6xl text-white group-hover:scale-110 transition duration-300" />
         </div>
 
-        {/* Rating badge */}
+        {/* ✅ UPDATED RATING BADGE - Show Real Car Rating */}
         <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full shadow-md">
           <div className="flex items-center space-x-1">
             <FaStar className="text-yellow-400" />
-            <span className="font-medium text-gray-900">4.5</span>
+            <span className="font-medium text-gray-900">
+              {car.rating && car.rating > 0 ? car.rating.toFixed(1) : "New"}
+            </span>
           </div>
+          {car.ratingCount > 0 && (
+            <span className="text-xs text-gray-500">({car.ratingCount})</span>
+          )}
         </div>
       </div>
 
@@ -75,8 +80,8 @@ const CarsCard = ({
             onClick={() => onBookClick(buttonAction, car)}
             className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-xl font-medium hover:shadow-lg transform hover:scale-105 transition duration-300 flex items-center justify-center space-x-2"
           >
-            <FaCar />
-            <span>{buttonText}</span>
+            <FaCar className="text-lg" />
+            <span>Book Now</span>
           </button>
         )}
       </div>
