@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FaTimes, FaStar, FaCar, FaUser } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import { API_PATHS } from "../../utils/apiPaths";
+import axiosInstance from "../../utils/axiosInstance"; // ✅ USE AXIOS INSTANCE
 
 const RatingModal = ({ isOpen, onClose, booking, onRatingSubmitted }) => {
   const [driverRating, setDriverRating] = useState(0);
@@ -52,27 +53,15 @@ const RatingModal = ({ isOpen, onClose, booking, onRatingSubmitted }) => {
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/${apiPaths.CUSTOMER.RATE_RIDE}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            bookingId: booking._id,
-            driverRating,
-            carRating,
-            comment: comment.trim(),
-          }),
-        }
-      );
+      // ✅ FIXED - Use axiosInstance instead of fetch
+      const response = await axiosInstance.post(API_PATHS.CUSTOMER.RATE_RIDE, {
+        bookingId: booking._id,
+        driverRating,
+        carRating,
+        comment: comment.trim(),
+      });
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (response.data.success) {
         toast.success("Thank you for rating your ride!");
         onRatingSubmitted();
         onClose();
@@ -81,7 +70,7 @@ const RatingModal = ({ isOpen, onClose, booking, onRatingSubmitted }) => {
         setCarRating(0);
         setComment("");
       } else {
-        toast.error(data.message || "Failed to submit rating");
+        toast.error(response.data.message || "Failed to submit rating");
       }
     } catch (error) {
       console.error("Error submitting rating:", error);
