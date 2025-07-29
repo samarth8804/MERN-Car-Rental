@@ -46,6 +46,10 @@ const bookingSchema = new mongoose.Schema(
     },
     uniqueCode: { type: String, unique: true, required: true },
     isRated: { type: Boolean, default: false },
+    carRating: { type: Number, default: 1, min: 1, max: 5 },
+    driverRating: { type: Number, default: 1, min: 1, max: 5 },
+    ratingComment: { type: String, maxlength: 500 },
+    ratedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
