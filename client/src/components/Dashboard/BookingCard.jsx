@@ -10,6 +10,8 @@ import {
   FaClock,
   FaTimes,
   FaStar,
+  FaSpinner,
+  FaPhone,
 } from "react-icons/fa";
 import { MdDirectionsCar } from "react-icons/md";
 import RatingModal from "../common/RatingModal";
@@ -31,15 +33,20 @@ const BookingCard = ({
   const StatusIcon = statusInfo.icon;
   const canCancel = canCancelBooking(booking);
 
+  // ✅ CHECK IF BOOKING CAN BE RATED
+  const canRateBooking = booking.isCompleted && !booking.isRated;
+
   const handleRatingSubmitted = () => {
     // Update the booking object to reflect that it's been rated
-    onBookingUpdate({ ...booking, isRated: true });
+    if (onBookingUpdate) {
+      onBookingUpdate({ ...booking, isRated: true });
+    }
   };
 
   return (
     <>
       <div
-        className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden"
+        className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden cursor-pointer"
         onClick={() => onViewDetails(booking._id)}
       >
         <div className="p-6">
@@ -79,6 +86,28 @@ const BookingCard = ({
                 {booking.car?.licensePlate}
               </span>
             </div>
+
+            {/* ✅ SHOW CAR AND DRIVER RATINGS IF BOOKING IS RATED */}
+            {booking.isRated && (
+              <div className="flex items-center space-x-4 mt-2 text-sm">
+                <div className="flex items-center space-x-1">
+                  <FaCar className="text-blue-500 text-xs" />
+                  <span className="text-gray-600">Car:</span>
+                  <div className="flex items-center space-x-1">
+                    <FaStar className="text-yellow-400 text-xs" />
+                    <span className="font-medium">{booking.carRating}</span>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <FaUser className="text-green-500 text-xs" />
+                  <span className="text-gray-600">Driver:</span>
+                  <div className="flex items-center space-x-1">
+                    <FaStar className="text-yellow-400 text-xs" />
+                    <span className="font-medium">{booking.driverRating}</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Location Information */}
@@ -175,6 +204,20 @@ const BookingCard = ({
                     ? "Cancelling..."
                     : "Cancel"}
                 </span>
+              </button>
+            )}
+
+            {/* ✅ RATING BUTTON - Only show for completed, unrated bookings */}
+            {canRateBooking && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsRatingModalOpen(true);
+                }}
+                className="flex items-center space-x-2 px-4 py-2 bg-yellow-50 text-yellow-600 rounded-lg hover:bg-yellow-100 transition-colors duration-200"
+              >
+                <FaStar />
+                <span>Rate Ride</span>
               </button>
             )}
 
