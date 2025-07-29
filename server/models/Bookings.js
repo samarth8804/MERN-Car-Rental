@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
 
 const bookingSchema = new mongoose.Schema(
   {
@@ -46,12 +45,12 @@ const bookingSchema = new mongoose.Schema(
     },
     uniqueCode: { type: String, unique: true, required: true },
     isRated: { type: Boolean, default: false },
-    carRating: { type: Number, default: 1, min: 1, max: 5 },
-    driverRating: { type: Number, default: 1, min: 1, max: 5 },
+    carRating: { type: Number, min: 1, max: 5 },
+    driverRating: { type: Number, min: 1, max: 5 },
     ratingComment: { type: String, maxlength: 500 },
     ratedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Booking", bookingSchema);
+module.exports = mongoose.model("Bookings", bookingSchema);
