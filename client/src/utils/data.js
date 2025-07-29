@@ -13,8 +13,13 @@ import {
   FaWallet,
   FaRoute,
   FaCogs,
+  FaMapMarkerAlt,
+  FaCalendarAlt,
+  FaIdCard,
+  FaClock,
 } from "react-icons/fa";
 import { GiHomeGarage } from "react-icons/gi";
+import { MdDirectionsCar } from "react-icons/md";
 
 export const roles = [
   {
@@ -272,3 +277,67 @@ export const bookingFilters = {
     { key: "completed", label: "Completed" },
   ],
 };
+
+// ✅ NEW: Vehicle Specifications Configuration
+export const vehicleSpecsConfig = [
+  {
+    icon: MdDirectionsCar,
+    label: "Brand",
+    getValue: (car) => car.brand,
+    bgColor: "from-blue-50/80 to-blue-100/80",
+    borderColor: "border-blue-200/30",
+    iconColor: "text-blue-600",
+    textColor: "text-blue-900",
+    valueColor: "text-blue-800",
+  },
+  {
+    icon: FaCar,
+    label: "Model",
+    getValue: (car) => car.model,
+    bgColor: "from-purple-50/80 to-purple-100/80",
+    borderColor: "border-purple-200/30",
+    iconColor: "text-purple-600",
+    textColor: "text-purple-900",
+    valueColor: "text-purple-800",
+  },
+  {
+    icon: FaCalendarAlt,
+    label: "Year",
+    getValue: (car) => car.year,
+    bgColor: "from-green-50/80 to-green-100/80",
+    borderColor: "border-green-200/30",
+    iconColor: "text-green-600",
+    textColor: "text-green-900",
+    valueColor: "text-green-800",
+  },
+  {
+    icon: FaMapMarkerAlt,
+    label: "Location",
+    getValue: (car) => car.city,
+    bgColor: "from-orange-50/80 to-orange-100/80",
+    borderColor: "border-orange-200/30",
+    iconColor: "text-orange-600",
+    textColor: "text-orange-900",
+    valueColor: "text-orange-800",
+  },
+  {
+    icon: FaIdCard,
+    label: "License Plate",
+    getValue: (car) => car.licensePlate,
+    bgColor: "from-red-50/80 to-red-100/80",
+    borderColor: "border-red-200/30",
+    iconColor: "text-red-600",
+    textColor: "text-red-900",
+    valueColor: "text-red-800",
+  },
+  {
+    icon: FaClock,
+    label: "Minimum Rental",
+    getValue: () => "1 Full Day",
+    bgColor: "from-teal-50/80 to-teal-100/80",
+    borderColor: "border-teal-200/30",
+    iconColor: "text-teal-600",
+    textColor: "text-teal-900",
+    valueColor: "text-teal-800",
+  },
+];
