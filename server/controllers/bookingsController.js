@@ -27,7 +27,7 @@ exports.getBookingHistory = async (req, res) => {
     }
 
     const bookings = await Bookings.find(filter)
-      .populate("car", "brand model licensePlate")
+      .populate("car", "brand model licensePlate rating ratingCount totalRides")
       .populate("customer", "fullname email")
       .populate("driver", "fullname email")
       .sort({ createdAt: -1 });
@@ -70,6 +70,11 @@ exports.getBookingHistory = async (req, res) => {
         isCancelled: booking.isCancelled,
         cancellationFine: booking.cancellationFine,
         paymentStatus: booking.paymentStatus,
+        isRated: booking.isRated || false,
+        carRating: booking.carRating,
+        driverRating: booking.driverRating,
+        ratingComment: booking.ratingComment,
+        ratedAt: booking.ratedAt,
         createdAt: booking.createdAt,
         updatedAt: booking.updatedAt,
       };
@@ -105,7 +110,10 @@ exports.getSingleBooking = async (req, res) => {
     const role = req.role;
 
     const booking = await Bookings.findById(bookingId)
-      .populate("car", "brand model licensePlate ownerId")
+      .populate(
+        "car",
+        "brand model licensePlate ownerId rating ratingCount totalRides"
+      )
       .populate("customer", "fullname email")
       .populate("driver", "fullname email");
 
@@ -165,6 +173,11 @@ exports.getSingleBooking = async (req, res) => {
       isCancelled: booking.isCancelled,
       cancellationFine: booking.cancellationFine,
       paymentStatus: booking.paymentStatus,
+      isRated: booking.isRated || false,
+      carRating: booking.carRating,
+      driverRating: booking.driverRating,
+      ratingComment: booking.ratingComment,
+      ratedAt: booking.ratedAt,
       createdAt: booking.createdAt,
       updatedAt: booking.updatedAt,
     };
