@@ -281,6 +281,7 @@ exports.completeRide = async (req, res) => {
     const car = await Cars.findById(booking.car);
     if (car) {
       car.isAvailable = true;
+      car.totalRides = (car.totalRides || 0) + 1; // Increment total rides count
       await car.save();
     }
 
