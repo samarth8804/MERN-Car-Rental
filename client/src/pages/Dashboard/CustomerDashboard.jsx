@@ -12,7 +12,7 @@ import CustomerDashboardTabs from "../../components/Dashboard/CustomerDashboardT
 import CarsTab from "../../components/Dashboard/CarsTab";
 import BookingsTab from "../../components/Dashboard/BookingsTab";
 import ProfileTab from "../../components/Dashboard/ProfileTab";
-import CarDetailsModal from "../../components/Dashboard/CarDetailsModal"; // New import
+import CarDetailsModal from "../../components/Dashboard/CarDetailsModal";
 
 // Utility imports
 import { validateDateRange } from "../../utils/dashboard/dateUtils";
@@ -34,11 +34,12 @@ const CustomerDashboard = () => {
   const [cars, setCars] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [carsLoading, setCarsLoading] = useState(false); // ✅ Separate loading for cars
   const [selectedCity, setSelectedCity] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [bookingFilter, setBookingFilter] = useState("all");
   const [cancellingBooking, setCancellingBooking] = useState("");
-  const [error, setError] = useState(null);
+  const [criticalError, setCriticalError] = useState(null); // ✅ Only for critical errors
 
   // New state for car details modal
   const [selectedCar, setSelectedCar] = useState(null);
@@ -80,13 +81,33 @@ const CustomerDashboard = () => {
     }
   }, [location.search, activeTab]);
 
-  // Data initialization
+  // ✅ FIXED: Data initialization - Handle each independently
   useEffect(() => {
     if (isAuthenticated && user?.role === "customer") {
-      fetchCars();
-      fetchBookings();
+      initializeDashboard();
     }
   }, [isAuthenticated, user]);
+
+  // ✅ NEW: Initialize dashboard data independently
+  const initializeDashboard = async () => {
+    setLoading(true);
+    setCriticalError(null);
+
+    try {
+      // Fetch both cars and bookings independently - don't let one failure affect the other
+      await Promise.allSettled([
+        fetchCars().catch(console.error), // Don't throw, just log
+        fetchBookings().catch(console.error), // Don't throw, just log
+      ]);
+    } catch (error) {
+      console.error("Critical dashboard initialization error:", error);
+      setCriticalError(
+        "Failed to initialize dashboard. Please refresh the page."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Tab change handler
   const handleTabChange = (tab) => {
@@ -98,7 +119,7 @@ const CustomerDashboard = () => {
     });
   };
 
-  // Enhanced date filter change handler - Fixed to prevent API calls on validation failure
+  // Enhanced date filter change handler
   const handleDateFilterChange = (field, value) => {
     const newDateFilters = { ...dateFilters, [field]: value };
     setDateFilters(newDateFilters);
@@ -108,7 +129,6 @@ const CustomerDashboard = () => {
       const startDate = new Date(value);
       const endDate = new Date(newDateFilters.endDate);
 
-      // Fixed: Only clear if start date is actually after end date
       if (startDate > endDate) {
         setDateFilters({
           ...newDateFilters,
@@ -126,17 +146,14 @@ const CustomerDashboard = () => {
 
       if (!validation.isValid) {
         toast.error(validation.error);
-
-        // Fixed: Clear cars and prevent API call when validation fails
         setCars([]);
         setDateFilters((prev) => ({
           ...prev,
           isDateFilterActive: false,
         }));
-        return; // Don't proceed with API call
+        return;
       }
 
-      // If validation passes, fetch cars with date filters
       setDateFilters((prev) => ({
         ...prev,
         isDateFilterActive: true,
@@ -144,7 +161,6 @@ const CustomerDashboard = () => {
 
       fetchCars(selectedCity, newDateFilters.startDate, value);
 
-      // Show appropriate success message for same-day vs multi-day
       if (validation.isSameDay) {
         toast.success("Showing cars available for same-day rental");
       } else {
@@ -160,17 +176,14 @@ const CustomerDashboard = () => {
 
       if (!validation.isValid) {
         toast.error(validation.error);
-
-        // Fixed: Clear cars and prevent API call when validation fails
         setCars([]);
         setDateFilters((prev) => ({
           ...prev,
           isDateFilterActive: false,
         }));
-        return; // Don't proceed with API call
+        return;
       }
 
-      // If validation passes, fetch cars with date filters
       setDateFilters((prev) => ({
         ...prev,
         isDateFilterActive: true,
@@ -178,7 +191,6 @@ const CustomerDashboard = () => {
 
       fetchCars(selectedCity, value, newDateFilters.endDate);
 
-      // Show appropriate success message for same-day vs multi-day
       if (validation.isSameDay) {
         toast.success("Showing cars available for same-day rental");
       } else {
@@ -189,20 +201,17 @@ const CustomerDashboard = () => {
     }
   };
 
-  // Enhanced fetchCars function with better error handling
+  // ✅ FIXED: Enhanced fetchCars - Don't throw critical errors
   const fetchCars = async (city = "", startDate = "", endDate = "") => {
     try {
-      setLoading(true);
-      setError(null);
+      setCarsLoading(true);
 
       const params = new URLSearchParams();
       if (startDate && endDate) {
-        // Ensure dates are in YYYY-MM-DD format
         const formattedStartDate = new Date(startDate)
           .toISOString()
           .split("T")[0];
         const formattedEndDate = new Date(endDate).toISOString().split("T")[0];
-
         params.append("startDate", formattedStartDate);
         params.append("endDate", formattedEndDate);
       }
@@ -226,29 +235,33 @@ const CustomerDashboard = () => {
           isDateFilterActive: !!(startDate && endDate),
         }));
 
-        if (startDate && endDate && carsData.length > 0) {
-          toast.success(`Found ${carsData.length} available cars`);
-        } else if (startDate && endDate && carsData.length === 0) {
-          toast.info("No cars available for selected dates");
+        // ✅ Only show success message if cars are found and dates are selected
+        if (startDate && endDate) {
+          if (carsData.length > 0) {
+            toast.success(`Found ${carsData.length} available cars`);
+          } else {
+            toast.info("No cars available for selected dates");
+          }
         }
       } else {
+        // ✅ Handle "no cars found" gracefully - not an error
         setCars([]);
-        if (startDate && endDate) {
+        if (response.data.message?.includes("No approved cars found")) {
+          // This is normal, just set empty array
+          console.log("No approved cars available");
+        } else if (startDate && endDate) {
           toast.info("No cars available for selected dates");
-        } else {
-          toast.error(response.data.message || "Failed to fetch cars");
         }
       }
     } catch (error) {
       console.error("Error fetching cars:", error);
 
-      // Better error handling
+      // ✅ Better error handling - Don't break the dashboard
       if (error.response?.status === 400) {
         const errorMessage =
           error.response.data.message || "Invalid date selection";
         toast.error(errorMessage);
 
-        // If it's a date validation error, clear the problematic date
         if (errorMessage.includes("past")) {
           setDateFilters({
             startDate: "",
@@ -256,18 +269,21 @@ const CustomerDashboard = () => {
             isDateFilterActive: false,
           });
         }
+      } else if (error.response?.status === 404) {
+        // ✅ 404 for no cars is normal, not an error
+        setCars([]);
       } else {
-        setError("Failed to load cars. Please try again.");
+        // ✅ Only show error for actual network/server issues
         toast.error("Failed to load cars. Please try again.");
       }
 
       setCars([]);
     } finally {
-      setLoading(false);
+      setCarsLoading(false);
     }
   };
 
-  // Fetch bookings
+  // ✅ FIXED: Fetch bookings - Don't throw critical errors
   const fetchBookings = async () => {
     try {
       const response = await axiosInstance.get(
@@ -277,11 +293,20 @@ const CustomerDashboard = () => {
       if (response.data.success) {
         setBookings(response.data.bookingHistory || []);
       } else {
+        // ✅ No bookings is normal, not an error
         setBookings([]);
       }
     } catch (error) {
       console.error("Error fetching bookings:", error);
+      // ✅ Don't break dashboard for booking fetch failures
       setBookings([]);
+
+      // Only show error if it's not a 404 (no bookings found)
+      if (error.response?.status !== 404) {
+        console.warn(
+          "Failed to fetch bookings, but dashboard will continue to work"
+        );
+      }
     }
   };
 
@@ -302,13 +327,13 @@ const CustomerDashboard = () => {
     toast.success("Date filters cleared");
   };
 
-  // Updated Book car handler - now opens modal first
+  // Book car handler
   const handleBookCar = (car) => {
     setSelectedCar(car);
     setIsCarModalOpen(true);
   };
 
-  // New handler for proceeding to booking page from modal
+  // Proceed to booking page from modal
   const handleProceedToBooking = (car) => {
     setIsCarModalOpen(false);
     setSelectedCar(null);
@@ -365,8 +390,8 @@ const CustomerDashboard = () => {
     navigate(`/booking-details/${bookingId}`);
   };
 
-  // Loading state
-  if (!isAuthenticated || !user) {
+  // ✅ FIXED: Loading state - Only show for initial load
+  if (loading && !isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -377,8 +402,8 @@ const CustomerDashboard = () => {
     );
   }
 
-  // Error state
-  if (error) {
+  // ✅ FIXED: Only show critical error state for authentication/permission issues
+  if (criticalError) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -386,7 +411,7 @@ const CustomerDashboard = () => {
           <h3 className="text-xl font-medium text-gray-900 mb-2">
             Something went wrong
           </h3>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <p className="text-gray-600 mb-4">{criticalError}</p>
           <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -414,18 +439,19 @@ const CustomerDashboard = () => {
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* ✅ Dashboard always loads - individual tabs handle their own loading/empty states */}
         {activeTab === "cars" && (
           <CarsTab
             dateFilters={dateFilters}
             filteredCars={filteredCars}
             selectedCity={selectedCity}
             searchTerm={searchTerm}
-            loading={loading}
+            loading={carsLoading} // ✅ Use separate cars loading state
             onDateFilterChange={handleDateFilterChange}
             onClearDateFilters={clearDateFilters}
             onCityChange={handleCityChange}
             onSearchChange={setSearchTerm}
-            onBookCar={handleBookCar} // This now opens the modal
+            onBookCar={handleBookCar}
           />
         )}
 
