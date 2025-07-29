@@ -2,26 +2,27 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FaSpinner, FaExclamationTriangle } from "react-icons/fa";
 import { toast } from "react-hot-toast";
+
+// Existing imports
+import { useAuth } from "../../context/UserContext";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPaths";
-import { useAuth } from "../../context/UserContext";
 import Navbar from "../../components/layouts/Navbar";
-import { getDashboardTabs } from "../../utils/data";
-
-// Component imports - Fixed paths
 import CustomerDashboardTabs from "../../components/Dashboard/CustomerDashboardTab";
 import CarsTab from "../../components/Dashboard/CarsTab";
 import BookingsTab from "../../components/Dashboard/BookingsTab";
 import ProfileTab from "../../components/Dashboard/ProfileTab";
+import CarDetailsModal from "../../components/Dashboard/CarDetailsModal"; // New import
 
-// Utility imports - Fixed paths based on your existing structure
+// Utility imports
+import { validateDateRange } from "../../utils/dashboard/dateUtils";
 import {
-  getActiveTabFromURL,
   filterCarsBySearch,
+  getActiveTabFromURL,
   getActiveBookingsCount,
 } from "../../utils/dashboard/customerDashboardUtils";
-import { validateDateRange } from "../../utils/dashboard/dateUtils";
 import { getBookingFilterCounts } from "../../utils/dashboard/bookingUtils";
+import { getDashboardTabs } from "../../utils/data";
 
 const CustomerDashboard = () => {
   const { user, isAuthenticated } = useAuth();
@@ -38,6 +39,10 @@ const CustomerDashboard = () => {
   const [bookingFilter, setBookingFilter] = useState("all");
   const [cancellingBooking, setCancellingBooking] = useState("");
   const [error, setError] = useState(null);
+
+  // New state for car details modal
+  const [selectedCar, setSelectedCar] = useState(null);
+  const [isCarModalOpen, setIsCarModalOpen] = useState(false);
 
   // Date filtering state
   const [dateFilters, setDateFilters] = useState({
@@ -297,8 +302,17 @@ const CustomerDashboard = () => {
     toast.success("Date filters cleared");
   };
 
-  // Book car handler
+  // Updated Book car handler - now opens modal first
   const handleBookCar = (car) => {
+    setSelectedCar(car);
+    setIsCarModalOpen(true);
+  };
+
+  // New handler for proceeding to booking page from modal
+  const handleProceedToBooking = (car) => {
+    setIsCarModalOpen(false);
+    setSelectedCar(null);
+
     if (dateFilters.isDateFilterActive) {
       navigate(`/book-car/${car._id}`, {
         state: {
@@ -312,6 +326,12 @@ const CustomerDashboard = () => {
     } else {
       navigate(`/book-car/${car._id}`, { state: { car } });
     }
+  };
+
+  // Modal close handler
+  const handleCloseModal = () => {
+    setIsCarModalOpen(false);
+    setSelectedCar(null);
   };
 
   // Cancel booking handler
@@ -405,7 +425,7 @@ const CustomerDashboard = () => {
             onClearDateFilters={clearDateFilters}
             onCityChange={handleCityChange}
             onSearchChange={setSearchTerm}
-            onBookCar={handleBookCar}
+            onBookCar={handleBookCar} // This now opens the modal
           />
         )}
 
@@ -424,6 +444,15 @@ const CustomerDashboard = () => {
 
         {activeTab === "profile" && <ProfileTab user={user} />}
       </div>
+
+      {/* Car Details Modal */}
+      <CarDetailsModal
+        isOpen={isCarModalOpen}
+        car={selectedCar}
+        dateFilters={dateFilters}
+        onClose={handleCloseModal}
+        onBookCar={handleProceedToBooking}
+      />
     </div>
   );
 };
