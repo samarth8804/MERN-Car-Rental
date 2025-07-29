@@ -348,22 +348,35 @@ exports.getCustomerProfile = async (req, res) => {
   }
 };
 
-exports.rateDriver = async (req, res) => {
+// rateRide (Combined Rating)
+exports.rateRide = async (req, res) => {
   try {
-    const { bookingId, rating } = req.body;
+    const { bookingId, driverRating, carRating, comment } = req.body;
     const customerId = req.user._id;
 
-    if (!bookingId || !rating || rating < 1 || rating > 5) {
+    // Validate input
+    if (!bookingId || !driverRating || !carRating) {
       return res.status(400).json({
         success: false,
-        message: "Booking ID and valid rating (1-5) are required",
+        message: "Booking ID, driver rating, and car rating are required",
+      });
+    }
+
+    if (
+      driverRating < 1 ||
+      driverRating > 5 ||
+      carRating < 1 ||
+      carRating > 5
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Both ratings must be between 1 and 5",
       });
     }
 
     // Find the booking
     const booking = await Bookings.findById(bookingId);
 
-    // Check if booking exists
     if (!booking) {
       return res.status(404).json({
         success: false,
@@ -375,53 +388,83 @@ exports.rateDriver = async (req, res) => {
     if (booking.customer.toString() !== customerId.toString()) {
       return res.status(403).json({
         success: false,
-        message: "You are not authorized to rate for this ride",
+        message: "You are not authorized to rate this ride",
       });
     }
 
-    // Check if the booking is completed or cancelled
+    // Check if the booking is completed
     if (!booking.isCompleted || booking.isCancelled) {
       return res.status(400).json({
         success: false,
-        message: "Ride must be completed to rate the driver",
+        message: "Ride must be completed to rate",
       });
     }
 
-    // Check if the driver has already been rated
+    // Check if already rated
     if (booking.isRated) {
       return res.status(400).json({
         success: false,
-        message: "Driver has already been rated for this ride",
+        message: "This ride has already been rated",
       });
     }
 
-    // Find the driver and update their rating
+    // Find the driver and car
     const driver = await Driver.findById(booking.driver);
-    if (!driver) {
+    const car = await Cars.findById(booking.car);
+
+    if (!driver || !car) {
       return res.status(404).json({
         success: false,
-        message: "Driver not found",
+        message: "Driver or car not found",
       });
     }
-    // Calculate new average rating
-    const existingRatings = driver.ratingCount || 0;
-    const currentTotalRating = driver.rating * driver.ratingCount;
-    const newAverageRating = Math.floor(
-      Math.abs((currentTotalRating + rating) / (existingRatings + 1))
-    );
 
-    driver.rating = newAverageRating;
-    driver.ratingCount = existingRatings + 1; // Increment rating count
-    booking.isRated = true; // Mark the booking as rated
-    await driver.save();
-    await booking.save();
+    // Update Driver Rating
+    const driverExistingRatings = driver.ratingCount || 0;
+    const driverCurrentTotalRating = driver.rating * driverExistingRatings;
+    const driverNewAverageRating =
+      (driverCurrentTotalRating + driverRating) / (driverExistingRatings + 1);
+
+    driver.rating = Math.round(driverNewAverageRating * 10) / 10; // Round to 1 decimal
+    driver.ratingCount = driverExistingRatings + 1;
+
+    // Update Car Rating
+    const carExistingRatings = car.ratingCount || 0;
+    const carCurrentTotalRating = car.rating * carExistingRatings;
+    const carNewAverageRating =
+      (carCurrentTotalRating + carRating) / (carExistingRatings + 1);
+
+    car.rating = Math.round(carNewAverageRating * 10) / 10; // Round to 1 decimal
+    car.ratingCount = carExistingRatings + 1;
+
+    // Update booking with ratings
+    booking.isRated = true;
+    booking.driverRating = driverRating;
+    booking.carRating = carRating;
+    booking.ratingComment = comment || "";
+    booking.ratedAt = new Date();
+
+    // Save all updates
+    await Promise.all([driver.save(), car.save(), booking.save()]);
 
     return res.status(200).json({
       success: true,
-      message: "Driver rated successfully",
+      message: "Ride rated successfully",
+      data: {
+        driverRating: {
+          given: driverRating,
+          newAverage: driver.rating,
+          totalRatings: driver.ratingCount,
+        },
+        carRating: {
+          given: carRating,
+          newAverage: car.rating,
+          totalRatings: car.ratingCount,
+        },
+      },
     });
   } catch (error) {
-    console.error("Error rating driver:", error);
+    console.error("Error rating ride:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
