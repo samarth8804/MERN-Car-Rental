@@ -3,7 +3,7 @@ const {
   getAvailableCars,
   bookCar,
   getCustomerProfile,
-  rateDriver,
+  rateRide,
 } = require("../controllers/customerController");
 const router = express.Router();
 const { protect } = require("../middlewares/authMiddleware");
@@ -14,6 +14,6 @@ router.post("/book-car", protect(["customer"]), bookCar);
 
 router.get("/get-customer-profile", protect(["customer"]), getCustomerProfile);
 
-router.post("/rate-driver", protect(["customer"]), rateDriver);
+router.post("/rate-ride", protect(["customer"]), rateRide);
 
 module.exports = router;
