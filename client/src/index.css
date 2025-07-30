@@ -1,1 +1,48 @@
 @import "tailwindcss";
+
+/* ✅ Map marker animations */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.temp-marker {
+  animation: pulse 2s infinite;
+}
+
+.pickup-marker:hover,
+.drop-marker:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+/* Crosshair cursor for clickable map */
+.cursor-crosshair {
+  cursor: crosshair;
+}
+
+/* Better map container */
+.leaflet-container {
+  border-radius: 8px;
+}
+
+/* Custom popup styles */
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+.leaflet-popup-content {
+  margin: 8px 12px;
+  font-size: 13px;
+}
