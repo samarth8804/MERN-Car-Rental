@@ -3,7 +3,10 @@ import {
   FaExclamationTriangle,
   FaInfoCircle,
 } from "react-icons/fa";
-import { validateDateRange } from "../../utils/dashboard/dateUtils";
+import {
+  validateDateRange,
+  calculateRentalDays,
+} from "../../utils/dashboard/dateUtils";
 
 const DateFilterSection = ({
   dateFilters,
@@ -17,20 +20,10 @@ const DateFilterSection = ({
   containerClassName = "",
   required = false,
 }) => {
-  // Calculate duration with same-day handling
+  // ✅ FIXED: Calculate duration with inclusive method
   const calculateDuration = () => {
     if (!dateFilters.startDate || !dateFilters.endDate) return 0;
-
-    const startDate = new Date(dateFilters.startDate);
-    const endDate = new Date(dateFilters.endDate);
-
-    startDate.setHours(0, 0, 0, 0);
-    endDate.setHours(0, 0, 0, 0);
-
-    const diffInDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-
-    // Return at least 1 day for same-day bookings
-    return diffInDays === 0 ? 1 : diffInDays;
+    return calculateRentalDays(dateFilters.startDate, dateFilters.endDate);
   };
 
   const duration = calculateDuration();
@@ -180,7 +173,7 @@ const DateFilterSection = ({
                     {isSameDay ? (
                       <span className="font-semibold">
                         {variant === "booking"
-                          ? "Same Day"
+                          ? "Same Day (1 Day)"
                           : "Same-day rental (1 day)"}
                       </span>
                     ) : (
