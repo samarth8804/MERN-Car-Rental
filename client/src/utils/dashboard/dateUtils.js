@@ -35,7 +35,7 @@ export const formatDateTimeIndian = (dateString) => {
   });
 };
 
-// Fixed: Validate date range - now allows same-day and today's date
+// ✅ FIXED: Calculate inclusive date range (both start and end days included)
 export const validateDateRange = (startDate, endDate) => {
   const start = new Date(startDate);
   const end = new Date(endDate);
@@ -56,9 +56,11 @@ export const validateDateRange = (startDate, endDate) => {
     return { isValid: false, error: "Start date cannot be in the past" };
   }
 
-  const daysDifference = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+  // ✅ FIXED: Calculate inclusive days (start day + end day included)
+  const daysDifference = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+  const isSameDay = start.getTime() === end.getTime();
 
-  // Fixed: Allow same-day bookings (daysDifference = 0)
+  // Fixed: Allow same-day bookings (daysDifference = 1 for same day)
   if (daysDifference > 30) {
     return { isValid: false, error: "Maximum rental period is 30 days" };
   }
@@ -66,18 +68,27 @@ export const validateDateRange = (startDate, endDate) => {
   // Return appropriate message for same-day vs multi-day bookings
   return {
     isValid: true,
-    daysDifference: daysDifference === 0 ? 1 : daysDifference, // Treat same-day as 1 day
-    isSameDay: daysDifference === 0,
+    daysDifference, // Now correctly includes both start and end days
+    isSameDay,
   };
 };
 
-// Get date difference in days
+// ✅ FIXED: Get inclusive date difference in days
 export const getDateDifference = (startDate, endDate) => {
   const start = new Date(startDate);
   const end = new Date(endDate);
-  const diffTime = Math.abs(end - start);
-  const daysDiff = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-  // Return at least 1 day for same-day bookings
-  return daysDiff === 0 ? 1 : daysDiff;
+  // Reset time to start of day
+  start.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+
+  // ✅ FIXED: Inclusive calculation (both days included)
+  const daysDiff = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+  return daysDiff;
+};
+
+// ✅ NEW: Helper function for consistent date calculation across the app
+export const calculateRentalDays = (startDate, endDate) => {
+  return getDateDifference(startDate, endDate);
 };
