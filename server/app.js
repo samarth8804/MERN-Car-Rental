@@ -20,6 +20,7 @@ const customerRoutes = require("./routes/customerRoutes");
 const carRoutes = require("./routes/carRoutes");
 const driverRoutes = require("./routes/driverRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
+const locationRoutes = require("./routes/locationRoutes");
 
 // Middleware to handle CORS
 app.use(
@@ -41,6 +42,7 @@ app.use("/api/v1/customer", customerRoutes);
 app.use("/api/v1/car", carRoutes);
 app.use("/api/v1/driver", driverRoutes);
 app.use("/api/v1/upload", uploadRoutes);
+app.use("/api/location", locationRoutes);
 
 // Serve uploaded images
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
