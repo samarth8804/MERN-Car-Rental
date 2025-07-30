@@ -1,10 +1,21 @@
-import { FaCalendarAlt, FaExclamationTriangle } from "react-icons/fa";
+import {
+  FaCalendarAlt,
+  FaExclamationTriangle,
+  FaInfoCircle,
+} from "react-icons/fa";
 import { validateDateRange } from "../../utils/dashboard/dateUtils";
 
 const DateFilterSection = ({
   dateFilters,
   onDateFilterChange,
   onClearDateFilters,
+  // ✅ NEW: Props for different use cases
+  variant = "filter", // "filter" | "booking"
+  title,
+  showClearButton = true,
+  showDuration = true,
+  containerClassName = "",
+  required = false,
 }) => {
   // Calculate duration with same-day handling
   const calculateDuration = () => {
@@ -32,17 +43,45 @@ const DateFilterSection = ({
       ? validateDateRange(dateFilters.startDate, dateFilters.endDate)
       : { isValid: true };
 
+  // ✅ Dynamic styling based on variant
+  const getContainerClasses = () => {
+    const baseClasses = "rounded-lg p-4";
+
+    if (variant === "booking") {
+      return `${baseClasses} bg-white border border-gray-200 ${containerClassName}`;
+    }
+
+    // Default filter variant
+    return `${baseClasses} bg-blue-50 border border-blue-200 ${containerClassName}`;
+  };
+
+  const getHeaderTextColor = () => {
+    return variant === "booking" ? "text-gray-900" : "text-blue-900";
+  };
+
+  const getDefaultTitle = () => {
+    return variant === "booking"
+      ? "Select Rental Period"
+      : "Filter by Rental Dates";
+  };
+
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <div className={getContainerClasses()}>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-blue-900 flex items-center">
+        <h3
+          className={`text-sm font-medium ${getHeaderTextColor()} flex items-center`}
+        >
           <FaCalendarAlt className="mr-2" />
-          Filter by Rental Dates
+          {title || getDefaultTitle()}
         </h3>
-        {dateFilters.isDateFilterActive && (
+        {showClearButton && dateFilters.isDateFilterActive && (
           <button
             onClick={onClearDateFilters}
-            className="text-sm text-blue-600 hover:text-blue-800 underline font-medium"
+            className={`text-sm underline font-medium ${
+              variant === "booking"
+                ? "text-gray-600 hover:text-gray-800"
+                : "text-blue-600 hover:text-blue-800"
+            }`}
           >
             Clear Dates
           </button>
@@ -52,23 +91,30 @@ const DateFilterSection = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Start Date
+            Start Date {required && "*"}
           </label>
           <input
             type="date"
             value={dateFilters.startDate}
             onChange={(e) => onDateFilterChange("startDate", e.target.value)}
             min={new Date().toISOString().split("T")[0]}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+            className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent transition-colors duration-200 ${
+              variant === "booking"
+                ? "py-3 focus:ring-blue-500 focus:border-blue-500"
+                : "focus:ring-blue-500 focus:border-blue-500"
+            }`}
+            required={required}
           />
           <p className="text-xs text-gray-500 mt-1">
-            You can select from today onwards
+            {variant === "booking"
+              ? "Select your rental start date"
+              : "You can select from today onwards"}
           </p>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            End Date
+            End Date {required && "*"}
           </label>
           <input
             type="date"
@@ -78,7 +124,12 @@ const DateFilterSection = ({
               dateFilters.startDate || new Date().toISOString().split("T")[0]
             }
             disabled={!dateFilters.startDate}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent transition-colors duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed ${
+              variant === "booking"
+                ? "py-3 focus:ring-blue-500 focus:border-blue-500"
+                : "focus:ring-blue-500 focus:border-blue-500"
+            }`}
+            required={required}
           />
           {!dateFilters.startDate ? (
             <p className="text-xs text-gray-500 mt-1">
@@ -86,13 +137,16 @@ const DateFilterSection = ({
             </p>
           ) : (
             <p className="text-xs text-gray-500 mt-1">
-              Can be same as start date for single-day rental
+              {variant === "booking"
+                ? "Can be same as start date for same-day rental"
+                : "Can be same as start date for single-day rental"}
             </p>
           )}
         </div>
       </div>
 
-      {dateFilters.startDate && dateFilters.endDate && (
+      {/* Duration Display */}
+      {showDuration && dateFilters.startDate && dateFilters.endDate && (
         <div className="mt-3">
           {!validation.isValid ? (
             // Show error state for invalid date ranges
@@ -104,21 +158,53 @@ const DateFilterSection = ({
               </div>
             </div>
           ) : (
-            // Show normal duration display
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <div className="text-sm text-blue-700">
-                <span className="font-medium">Duration:</span>{" "}
-                {isSameDay ? (
-                  <span className="font-semibold">Same-day rental (1 day)</span>
-                ) : (
-                  <span>{duration} days</span>
+            // Show normal duration display with variant-specific styling
+            <div
+              className={`p-2 rounded-lg ${
+                variant === "booking"
+                  ? "bg-blue-50 border border-blue-200"
+                  : "bg-blue-100"
+              }`}
+            >
+              <div
+                className={`flex items-start space-x-2 ${
+                  variant === "booking" ? "text-blue-900" : "text-blue-700"
+                }`}
+              >
+                {variant === "booking" && (
+                  <FaInfoCircle className="text-blue-500 mt-0.5" />
                 )}
-              </div>
-              {isSameDay && (
-                <div className="text-xs text-blue-600 mt-1">
-                  Perfect for short trips!
+                <div>
+                  <p className="text-sm font-medium">
+                    {variant === "booking" ? "Rental Duration:" : "Duration:"}{" "}
+                    {isSameDay ? (
+                      <span className="font-semibold">
+                        {variant === "booking"
+                          ? "Same Day"
+                          : "Same-day rental (1 day)"}
+                      </span>
+                    ) : (
+                      <span>{duration} days</span>
+                    )}
+                  </p>
+                  {variant === "booking" && (
+                    <p className="text-xs text-blue-700 mt-1">
+                      {isSameDay
+                        ? "Perfect for day trips and city tours"
+                        : `From ${new Date(
+                            dateFilters.startDate
+                          ).toLocaleDateString()} to ${new Date(
+                            dateFilters.endDate
+                          ).toLocaleDateString()}`}
+                    </p>
+                  )}
+                  {variant === "filter" && isSameDay && (
+                    <div className="text-xs text-blue-600 mt-1">
+                      Perfect for short trips!
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           )}
         </div>
