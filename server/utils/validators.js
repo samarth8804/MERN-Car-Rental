@@ -99,14 +99,11 @@ exports.validateDomainMX = async (email) => {
   );
 
   if (isTrusted) {
-    console.log(`✅ Trusted domain validated: ${domain}`);
     return true;
   }
 
   // ✅ For unknown domains, perform MX lookup with timeout and fallback
   try {
-    console.log(`🔍 Performing MX lookup for unknown domain: ${domain}`);
-
     // Set timeout for DNS lookup (3 seconds)
     const mxLookup = dns.resolveMx(domain);
     const timeout = new Promise((_, reject) =>
@@ -116,7 +113,6 @@ exports.validateDomainMX = async (email) => {
     const records = await Promise.race([mxLookup, timeout]);
     const isValid = records && records.length > 0;
 
-    console.log(`✅ MX lookup successful for ${domain}:`, isValid);
     return isValid;
   } catch (error) {
     console.warn(`⚠️ MX lookup failed for ${domain}:`, error.message);
@@ -130,7 +126,6 @@ exports.validateDomainMX = async (email) => {
       domain.includes(".") && domain.split(".").pop().length >= 2;
     const fallbackValid = isValidFormat && hasValidTLD;
 
-    console.log(`🔄 Fallback validation for ${domain}:`, fallbackValid);
     return fallbackValid;
   }
 };

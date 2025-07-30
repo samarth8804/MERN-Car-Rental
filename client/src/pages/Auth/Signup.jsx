@@ -137,9 +137,9 @@ const Signup = () => {
 
   // ✅ Form validation - Updated to properly use the validation function
   const validateForm = () => {
-    console.log("🔍 Validating form data:", formData); // Debug log
+    
     const validation = validateSignupForm(formData, role, loading);
-    console.log("🔍 Validation result:", validation); // Debug log
+    
     setErrors(validation.errors);
     return validation.isValid;
   };
@@ -175,7 +175,7 @@ const Signup = () => {
 
   // ✅ Handle terms acceptance change
   const handleTermsChange = (accepted) => {
-    console.log("🔍 Terms changed:", accepted); // Debug log
+    
     setFormData((prev) => ({
       ...prev,
       acceptTerms: accepted,
@@ -194,16 +194,16 @@ const Signup = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    console.log("🔍 Form submission attempted with data:", formData); // Debug log
+    
 
     // ✅ Validate form before proceeding
     if (!validateForm()) {
-      console.log("❌ Form validation failed:", errors); // Debug log
+      
       toast.error("Please fill all required fields correctly");
       return;
     }
 
-    console.log("✅ Form validation passed, proceeding with registration"); // Debug log
+    
 
     setOtpRetries(0);
     setLoading(true);

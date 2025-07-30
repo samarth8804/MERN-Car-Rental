@@ -5,6 +5,7 @@ const OTP = require("../models/OTP_Email");
 const Customer = require("../models/Customer");
 const { sendOTP } = require("../utils/sendOTP");
 const { sendNotifications } = require("../utils/sendNotifications");
+const { calculateRentalDays } = require("../utils/calculateRentalDays");
 
 exports.deleteDriver = async (req, res) => {
   try {
@@ -80,7 +81,7 @@ exports.endRide = async (req, res) => {
     // Validate input
     if (!actualReturnDate || !kmTravelled || !uniqueCode || !bookingId) {
       return res.status(400).json({
-        success: "false",
+        success: false,
         message: "Please provide all required fields.",
       });
     }
@@ -129,39 +130,52 @@ exports.endRide = async (req, res) => {
       });
     }
 
-    // Calculate billing summary
-    const oneDay = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    // ✅ FIXED: Calculate billing with proper date calculation and minimum charges
     const startDate = new Date(booking.startDate);
     const endDate = new Date(booking.endDate);
     const actualReturn = new Date(actualReturnDate);
 
-    let rideDays;
-    if (endDate > actualReturn) {
-      rideDays = Math.ceil((endDate - startDate) / oneDay);
+    // ✅ FIXED: Calculate planned days using inclusive method
+    const plannedDays = calculateRentalDays(booking.startDate, booking.endDate);
+
+    // ✅ FIXED: Calculate actual days using inclusive method
+    let actualDays;
+    if (actualReturn <= endDate) {
+      // Returned on time or early
+      actualDays = plannedDays;
     } else {
-      rideDays = Math.ceil((actualReturn - startDate) / oneDay);
+      // Returned late - calculate from start to actual return
+      actualDays = calculateRentalDays(booking.startDate, actualReturnDate);
     }
 
-    const plannedDays = Math.ceil((endDate - startDate) / oneDay);
-    const lateDays = Math.max(0, rideDays - plannedDays);
+    const lateDays = Math.max(0, actualDays - plannedDays);
 
     let totalAmount = 0;
-
     let lateReturnFine = 0;
+    let minimumChargeApplied = false;
 
+    // ✅ FIXED: Calculate amount with minimum 1-day guarantee
     if (booking.bookingType === "perDay") {
-      totalAmount = rideDays * car.pricePerDay;
+      totalAmount = actualDays * car.pricePerDay;
     } else if (booking.bookingType === "perKm") {
-      totalAmount = kmTravelled * car.pricePerKm;
+      // ✅ CRITICAL FIX: Ensure minimum 1-day charge for per-KM bookings
+      const kmBasedAmount = kmTravelled * car.pricePerKm;
+      const minimumDayCharge = car.pricePerDay; // Minimum 1-day charge
+
+      // Use whichever is higher: KM-based amount or minimum day charge
+      totalAmount = Math.max(kmBasedAmount, minimumDayCharge);
+      minimumChargeApplied = kmBasedAmount < minimumDayCharge;
     }
 
+    // Add AC charges if applicable (10% extra)
     if (booking.isAC) {
-      totalAmount += totalAmount * 0.1; // 10% extra for AC
+      totalAmount += Math.round(totalAmount * 0.1);
     }
 
+    // Calculate late return fine
     if (lateDays > 0) {
-      lateReturnFine = lateDays * 500; // Assuming 500 is the fine per late day
-      totalAmount += lateReturnFine; // Add late return fine to total amount
+      lateReturnFine = lateDays * 500; // 500 per late day
+      totalAmount += lateReturnFine;
     }
 
     // Update booking details
@@ -192,6 +206,11 @@ exports.endRide = async (req, res) => {
         bookingType: booking.bookingType,
         kmTravelled: kmTravelled,
         isAC: booking.isAC,
+        // ✅ FIXED: Include proper day calculations in summary
+        plannedDays,
+        actualDays,
+        lateDays,
+        minimumChargeApplied,
         lateReturnFine: lateReturnFine,
         totalAmount: totalAmount,
       },

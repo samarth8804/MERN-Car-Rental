@@ -13,8 +13,6 @@ const TermsCheckbox = ({ checked, onChange, error, disabled = false }) => {
     setDialogOpen(true);
   };
 
-  // ✅ Debug log to track checkbox state
-  console.log("🔍 TermsCheckbox - checked:", checked, "error:", error);
 
   return (
     <>
@@ -25,7 +23,7 @@ const TermsCheckbox = ({ checked, onChange, error, disabled = false }) => {
             <button
               type="button"
               onClick={() => {
-                console.log("🔍 Checkbox clicked, current state:", checked);
+                
                 onChange(!checked);
               }}
               disabled={disabled}

@@ -26,7 +26,6 @@ const FeaturedCars = ({ onOpenRoleModal }) => {
         url = API_PATHS.CUSTOMER.GET_AVAILABLE_CARS;
       }
 
-      console.log("Fetching cars from:", url);
 
       const response = await axiosInstance.get(url);
 
@@ -54,8 +53,7 @@ const FeaturedCars = ({ onOpenRoleModal }) => {
 
   // Handle city change - FIXED to prevent navigation
   const handleCityChange = async (city) => {
-    console.log("City selection changed to:", city);
-    setSelectedCity(city);
+    
 
     // Prevent any default navigation behavior
     try {
