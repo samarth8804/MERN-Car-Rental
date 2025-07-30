@@ -3,6 +3,7 @@ const Bookings = require("../models/Bookings");
 const Customer = require("../models/Customer");
 const Driver = require("../models/Driver");
 const { nanoid } = require("nanoid");
+const { calculateRentalDays } = require("../utils/calculateRentalDays");
 
 // Fixed function to handle same-day bookings
 exports.getAvailableCars = async (req, res) => {
@@ -12,7 +13,7 @@ exports.getAvailableCars = async (req, res) => {
     // Get all approved cars
     const allCars = await Cars.find({ status: "approved" })
       .select(
-        "brand model year licensePlate pricePerKm pricePerDay imageUrl city ownerId"
+        "brand model year licensePlate pricePerKm pricePerDay imageUrl city ownerId rating ratingCount totalRides"
       )
       .populate("ownerId", "fullname phone")
       .sort({
@@ -43,10 +44,10 @@ exports.getAvailableCars = async (req, res) => {
 
       // Fixed: Allow today's date - only prevent actual past dates
       const today = new Date();
-      today.setHours(0, 0, 0, 0); // Reset to start of day
+      today.setHours(0, 0, 0, 0);
 
       const startDateOnly = new Date(requestedStartDate);
-      startDateOnly.setHours(0, 0, 0, 0); // Reset to start of day
+      startDateOnly.setHours(0, 0, 0, 0);
 
       if (startDateOnly < today) {
         return res.status(400).json({
@@ -64,7 +65,6 @@ exports.getAvailableCars = async (req, res) => {
             isCompleted: false,
             $or: [
               {
-                // Fixed: Check for overlapping bookings including same-day bookings
                 $and: [
                   { startDate: { $lte: requestedEndDate } },
                   { endDate: { $gte: requestedStartDate } },
@@ -82,12 +82,9 @@ exports.getAvailableCars = async (req, res) => {
         availableCarIds.includes(car._id)
       );
 
-      // Calculate duration for response message
-      const daysDifference = Math.ceil(
-        (requestedEndDate - requestedStartDate) / (1000 * 60 * 60 * 24)
-      );
-      const isSameDay = daysDifference === 0;
-      const duration = isSameDay ? 1 : daysDifference;
+      // ✅ FIXED: Calculate duration using inclusive method
+      const duration = calculateRentalDays(startDate, endDate);
+      const isSameDay = startDate === endDate;
 
       return res.status(200).json({
         success: true,
@@ -128,8 +125,9 @@ exports.getAvailableCars = async (req, res) => {
   }
 };
 
-// Enhanced booking function with same-day booking support
+// ✅ FIXED: Enhanced booking function with proper pricing and minimum charges
 exports.bookCar = async (req, res) => {
+  
   try {
     const {
       carId,
@@ -150,11 +148,11 @@ exports.bookCar = async (req, res) => {
       !endDate ||
       !bookingType ||
       !pickupLocation?.address ||
-      !pickupLocation?.coordinates?.latitude ||
-      !pickupLocation?.coordinates?.longitude ||
+      pickupLocation?.coordinates?.latitude == null ||
+      pickupLocation?.coordinates?.longitude == null ||
       !dropLocation?.address ||
-      !dropLocation?.coordinates?.latitude ||
-      !dropLocation?.coordinates?.longitude
+      dropLocation?.coordinates?.latitude == null ||
+      dropLocation?.coordinates?.longitude == null
     ) {
       return res.status(400).json({
         success: false,
@@ -175,10 +173,10 @@ exports.bookCar = async (req, res) => {
 
     // Fixed: Allow today's date - only prevent actual past dates
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset to start of day
+    today.setHours(0, 0, 0, 0);
 
     const startDateOnly = new Date(requestedStartDate);
-    startDateOnly.setHours(0, 0, 0, 0); // Reset to start of day
+    startDateOnly.setHours(0, 0, 0, 0);
 
     if (startDateOnly < today) {
       return res.status(400).json({
@@ -263,6 +261,28 @@ exports.bookCar = async (req, res) => {
       });
     }
 
+    // ✅ FIXED: Calculate rental days using inclusive method
+    const rentalDays = calculateRentalDays(startDate, endDate);
+
+    // ✅ FIXED: Calculate initial amount with minimum 1-day charge guarantee
+    let initialAmount = 0;
+    let minimumChargeApplied = false;
+
+    if (bookingType === "perDay") {
+      initialAmount = car.pricePerDay * rentalDays;
+    } else if (bookingType === "perKm") {
+      // ✅ CRITICAL: For per-KM bookings, guarantee minimum 1-day charge
+      const minimumDayCharge = car.pricePerDay;
+      // Set minimum charge as initial amount - actual KM charges will be calculated on completion
+      initialAmount = minimumDayCharge;
+      minimumChargeApplied = true;
+    }
+
+    // Add AC charges if selected (10% extra)
+    if (isAC) {
+      initialAmount += Math.round(initialAmount * 0.1);
+    }
+
     // Create the booking
     const newBooking = new Bookings({
       customer: customerId,
@@ -286,28 +306,26 @@ exports.bookCar = async (req, res) => {
           longitude: dropLocation.coordinates.longitude,
         },
       },
+      totalAmount: initialAmount, // ✅ Set initial amount with minimum guarantee
       uniqueCode: nanoid(10),
     });
 
     await newBooking.save();
 
-    // Calculate duration for response
-    const daysDifference = Math.ceil(
-      (requestedEndDate - requestedStartDate) / (1000 * 60 * 60 * 24)
-    );
-    const isSameDay = daysDifference === 0;
+    // ✅ FIXED: Return proper duration calculation
+    const isSameDay = startDate === endDate;
 
     return res.status(201).json({
       success: true,
       message: isSameDay
         ? "Car booked successfully for same-day rental!"
-        : `Car booked successfully for ${
-            daysDifference === 0 ? 1 : daysDifference
-          } days!`,
+        : `Car booked successfully for ${rentalDays} days!`,
       booking: newBooking,
       bookingDetails: {
-        duration: isSameDay ? 1 : daysDifference,
+        duration: rentalDays,
         isSameDay,
+        minimumChargeApplied,
+        initialAmount,
       },
     });
   } catch (error) {
