@@ -60,4 +60,8 @@ export const API_PATHS = {
   UPLOAD: {
     UPLOAD_IMAGE: "api/v1/upload/upload-image",
   },
+  LOCATION: {
+    SEARCH: "api/location/search",
+    REVERSE: "api/location/reverse",
+  },
 };
