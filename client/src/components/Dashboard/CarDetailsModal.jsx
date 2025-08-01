@@ -7,6 +7,7 @@ import CostEstimationSection from "./CarDetailsModal/CostEstimationSection";
 import VehicleSpecsSection from "./CarDetailsModal/VehicleSpecsSection";
 import PricingOptionsSection from "./CarDetailsModal/PricingOptionsSection";
 import BookingButton from "./CarDetailsModal/BookingButton";
+import { calculateRentalDays } from "../../utils/dashboard/dateUtils";
 
 const CarDetailsModal = ({ isOpen, car, dateFilters, onClose, onBookCar }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -23,10 +24,7 @@ const CarDetailsModal = ({ isOpen, car, dateFilters, onClose, onBookCar }) => {
 
     const startDate = new Date(dateFilters.startDate);
     const endDate = new Date(dateFilters.endDate);
-    const daysDifference = Math.ceil(
-      (endDate - startDate) / (1000 * 60 * 60 * 24)
-    );
-    const days = daysDifference === 0 ? 1 : daysDifference;
+    const days = calculateRentalDays(startDate, endDate);
 
     const dailyRate = car.pricePerDay;
     const totalCost = dailyRate * days;
@@ -35,7 +33,7 @@ const CarDetailsModal = ({ isOpen, car, dateFilters, onClose, onBookCar }) => {
       days,
       dailyRate,
       totalCost,
-      isSameDay: daysDifference === 0,
+      isSameDay: days === 1,
     };
   };
 
