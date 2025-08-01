@@ -12,6 +12,7 @@ const BookingsTab = ({
   onViewBookingDetails,
   onCancelBooking,
   onTabChange,
+  onBookingUpdate
 }) => {
   const filteredBookings = filterBookingsByStatus(bookings, bookingFilter);
 
@@ -68,6 +69,7 @@ const BookingsTab = ({
               onViewDetails={onViewBookingDetails}
               onCancelBooking={onCancelBooking}
               cancellingBooking={cancellingBooking}
+              onBookingUpdate={onBookingUpdate}
             />
           ))}
         </div>
