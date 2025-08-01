@@ -4,6 +4,7 @@ const {
   deleteDriver,
   endRide,
   completeRide,
+  startRide,
 } = require("../controllers/driverController");
 const { protect } = require("../middlewares/authMiddleware");
 
@@ -12,6 +13,8 @@ router.delete(
   protect(["admin", "driver"]),
   deleteDriver
 );
+
+router.post("/start-ride", protect(["driver"]), startRide);
 
 router.post("/end-ride", protect(["driver"]), endRide);
 
