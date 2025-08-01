@@ -42,9 +42,6 @@ const CarsCard = ({
               {car.rating && car.rating > 0 ? car.rating.toFixed(1) : "New"}
             </span>
           </div>
-          {car.ratingCount > 0 && (
-            <span className="text-xs text-gray-500">({car.ratingCount})</span>
-          )}
         </div>
       </div>
 
