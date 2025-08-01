@@ -344,3 +344,74 @@ exports.completeRide = async (req, res) => {
     });
   }
 };
+
+exports.startRide = async (req, res) => {
+  try {
+    const { bookingId, uniqueCode } = req.body;
+    const driverId = req.user._id;
+
+    // Validate input
+    if (!bookingId || !uniqueCode) {
+      return res.status(400).json({
+        success: false,
+        message: "BookingId and uniqueCode are required.",
+      });
+    }
+
+    const booking = await Bookings.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    // Check if driver is authorized
+    if (booking.driver.toString() !== driverId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to start this ride",
+      });
+    }
+
+    // Check if already started or completed
+    if (booking.isStarted) {
+      return res.status(400).json({
+        success: false,
+        message: "Ride is already started",
+      });
+    }
+    if (booking.isCompleted) {
+      return res.status(400).json({
+        success: false,
+        message: "Ride is already completed",
+      });
+    }
+
+    // Check unique code
+    if (booking.uniqueCode !== uniqueCode) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid unique code",
+      });
+    }
+
+    booking.isStarted = true;
+    await booking.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Ride started successfully",
+      bookingId: booking._id,
+      startedAt: booking.updatedAt,
+    });
+  } catch (error) {
+    console.error("Error starting ride:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
