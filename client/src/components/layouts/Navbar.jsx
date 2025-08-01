@@ -52,6 +52,16 @@ const Navbar = ({
     setShowMobileMenu(false);
   };
 
+  const handleNotificationClick = () => {
+    // If already on dashboard, go to bookings tab
+    if (isDashboard) {
+      // Use window.location if you don't have access to navigate here
+      window.location.href = "/dashboard/customer?tab=bookings";
+    } else {
+      navigate("/dashboard/customer?tab=bookings");
+    }
+  };
+
   const handleLogout = () => {
     try {
       if (window.confirm("Are you sure you want to logout?")) {
@@ -148,7 +158,11 @@ const Navbar = ({
               <div className="flex items-center space-x-4">
                 {/* Notifications - Show only if enabled and has count */}
                 {showNotifications && notificationCount > 0 && (
-                  <button className="relative text-gray-700 hover:text-blue-600 transition duration-300 p-2 rounded-lg hover:bg-blue-50">
+                  <button
+                    className="relative text-gray-700 hover:text-blue-600 transition duration-300 p-2 rounded-lg hover:bg-blue-50"
+                    onClick={handleNotificationClick}
+                    title="View Active Bookings"
+                  >
                     <FaBell className="text-xl" />
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                       {notificationCount}
