@@ -338,34 +338,6 @@ exports.bookCar = async (req, res) => {
   }
 };
 
-exports.getCustomerProfile = async (req, res) => {
-  try {
-    const customerId = req.user._id;
-
-    const customer = await Customer.findById(customerId).select("-password");
-
-    if (!customer) {
-      return res.status(404).json({
-        success: false,
-        message: "Customer not found",
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: "Customer profile fetched successfully",
-      customer,
-    });
-  } catch (error) {
-    console.error("Error fetching customer profile:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message,
-    });
-  }
-};
-
 // rateRide (Combined Rating)
 exports.rateRide = async (req, res) => {
   try {
