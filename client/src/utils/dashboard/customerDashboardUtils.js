@@ -9,12 +9,31 @@ export const customerBookingFilters = [
 
 // Filter cars based on search term
 export const filterCarsBySearch = (cars, searchTerm) => {
-  return cars.filter(
-    (car) =>
-      car.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      car.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      car.city.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  if (!searchTerm || !searchTerm.trim()) {
+    return cars;
+  }
+
+  const normalizedSearchTerm = searchTerm.toLowerCase().trim();
+
+  return cars.filter((car) => {
+    // Search in multiple fields
+    const searchableFields = [
+      car.brand,
+      car.model,
+      car.licensePlate,
+      car.city,
+      car.fuelType,
+      car.transmission,
+      car.color,
+      `${car.brand} ${car.model}`, // Combined brand and model
+      car.carOwner?.fullname, // Owner name if available
+    ];
+
+    return searchableFields.some((field) => {
+      if (!field) return false;
+      return field.toString().toLowerCase().includes(normalizedSearchTerm);
+    });
+  });
 };
 
 // Get active tab from URL
