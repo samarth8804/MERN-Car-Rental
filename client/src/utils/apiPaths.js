@@ -27,7 +27,6 @@ export const API_PATHS = {
   CUSTOMER: {
     GET_AVAILABLE_CARS: "api/v1/customer/get-available-cars",
     BOOK_CAR: "api/v1/customer/book-car",
-    GET_CUSTOMER_PROFILE: "api/v1/customer/get-customer-profile",
     RATE_RIDE: "api/v1/customer/rate-ride",
   },
   // Car Owner
