@@ -39,6 +39,7 @@ exports.getCarDetails = async (req, res) => {
       isAvailable: car.isAvailable,
       rating: car.rating,
       city: car.city,
+      totalRides: car.totalRides,
     };
 
     let extendedCarDetails = {};
@@ -221,8 +222,9 @@ exports.getAvailableCities = async (req, res) => {
 exports.getCarsByCity = async (req, res) => {
   try {
     const { city } = req.params;
+    const { startDate, endDate } = req.query;
 
-    const cars = await Cars.find({
+    let cars = await Cars.find({
       city: city,
       status: "approved",
       isAvailable: true,
@@ -231,6 +233,29 @@ exports.getCarsByCity = async (req, res) => {
         "brand model year licensePlate pricePerKm pricePerDay imageUrl isAvailable city"
       )
       .sort({ pricePerDay: 1 });
+
+    let bookedCarIds = [];
+
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      // Find booking that conflict with the given dates
+      bookedCarIds = await Booking.find({
+        car: { $in: cars.map((car) => car._id) },
+        isCancelled: false,
+        isCompleted: false,
+        startDate: { $lte: end },
+        endDate: { $gte: start },
+      }).distinct("car");
+    }
+
+    // Filter out booked cars
+    cars = cars.filter((car) => {
+      return !bookedCarIds
+        .map((id) => id.toString())
+        .includes(car._id.toString());
+    });
 
     res.status(200).json({
       success: true,
