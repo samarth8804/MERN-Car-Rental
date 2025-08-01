@@ -77,6 +77,7 @@ exports.getBookingHistory = async (req, res) => {
         ratedAt: booking.ratedAt,
         createdAt: booking.createdAt,
         updatedAt: booking.updatedAt,
+        isStarted: booking.isStarted,
       };
       if (role === "customer") {
         return {
@@ -112,10 +113,13 @@ exports.getSingleBooking = async (req, res) => {
     const booking = await Bookings.findById(bookingId)
       .populate(
         "car",
-        "brand model licensePlate ownerId rating ratingCount totalRides"
+        "brand model licensePlate ownerId rating ratingCount totalRides imageUrl city pricePerDay pricePerKm"
       )
-      .populate("customer", "fullname email")
-      .populate("driver", "fullname email");
+      .populate("customer", "fullname email phone")
+      .populate(
+        "driver",
+        "fullname email phone licenseNumber rating totalRides city"
+      );
 
     if (!booking) {
       return res.status(404).json({
@@ -150,6 +154,9 @@ exports.getSingleBooking = async (req, res) => {
         brand: booking.car.brand,
         model: booking.car.model,
         licensePlate: booking.car.licensePlate,
+        imageUrl: booking.car.imageUrl,
+        pricePerDay: booking.car.pricePerDay,
+        pricePerKm: booking.car.pricePerKm,
       },
       customer: {
         fullname: booking.customer.fullname,
@@ -158,20 +165,24 @@ exports.getSingleBooking = async (req, res) => {
       driver: {
         fullname: booking.driver?.fullname || "N/A",
         email: booking.driver?.email || "N/A",
+        phone: booking.driver?.phone || "N/A",
+        licenseNumber: booking.driver?.licenseNumber || "N/A",
+        rating: booking.driver?.rating || 0,
+        totalRides: booking.driver?.totalRides || 0,
       },
       pickupLocation: booking.pickupLocation,
       dropLocation: booking.dropLocation,
       startDate: booking.startDate,
       endDate: booking.endDate,
-      actualReturnDate: booking.actualReturnDate,
-      lateReturnFine: booking.lateReturnFine,
+      actualReturnDate: booking.actualReturnDate || null,
+      lateReturnFine: booking.lateReturnFine || 0,
       bookingType: booking.bookingType,
-      kmTravelled: booking.kmTravelled,
+      kmTravelled: booking.kmTravelled || 0,
       isAC: booking.isAC,
       totalAmount: booking.totalAmount,
       isCompleted: booking.isCompleted,
       isCancelled: booking.isCancelled,
-      cancellationFine: booking.cancellationFine,
+      cancellationFine: booking.cancellationFine || 0,
       paymentStatus: booking.paymentStatus,
       isRated: booking.isRated || false,
       carRating: booking.carRating,
@@ -180,6 +191,7 @@ exports.getSingleBooking = async (req, res) => {
       ratedAt: booking.ratedAt,
       createdAt: booking.createdAt,
       updatedAt: booking.updatedAt,
+      isStarted: booking.isStarted,
     };
 
     if (role === "customer") {
@@ -253,12 +265,16 @@ exports.cancelBooking = async (req, res) => {
         } else if (diffInHours < 48) {
           cancellationFine = 300;
         }
+      } else {
+        cancellationFine = 1000;
       }
     }
+
     // Update booking status
     booking.isCancelled = true;
     booking.cancellationFine = cancellationFine;
-    booking.paymentStatus = "failed"; // Assuming payment is reversed on cancellation
+    booking.totalAmount = cancellationFine;
+    booking.paymentStatus = "completed"; // Assuming payment is reversed on cancellation
 
     // Mark the car as available again
     const car = await Cars.findById(booking.car);
@@ -288,7 +304,13 @@ exports.cancelBooking = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Booking cancelled successfully",
-      booking,
+      booking: {
+        _id: booking._id,
+        totalAmount: booking.totalAmount,
+        cancellationFine: booking.cancellationFine,
+        paymentStatus: booking.paymentStatus,
+        isCancelled: booking.isCancelled,
+      },
     });
   } catch (error) {
     console.error("Error cancelling booking:", error);
