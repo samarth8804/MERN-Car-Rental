@@ -38,6 +38,7 @@ const bookingSchema = new mongoose.Schema(
     isCompleted: { type: Boolean, default: false },
     isCancelled: { type: Boolean, default: false },
     cancellationFine: { type: Number, default: 0 },
+    isStarted: { type: Boolean, default: false },
     paymentStatus: {
       type: String,
       enum: ["pending", "completed", "failed"],
