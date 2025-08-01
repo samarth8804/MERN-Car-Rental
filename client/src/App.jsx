@@ -23,7 +23,6 @@ import DriverDashboard from "./pages/Dashboard/DriverDashboard";
 
 // Booking pages
 import CarBookingPage from "./pages/Booking/CarBookingPage";
-import BookingHistory from "./pages/Booking/BookingHistory";
 import BookingDetails from "./pages/Booking/BookingDetails";
 
 // Error pages
@@ -91,15 +90,6 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles="customer">
                   <CarBookingPage />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route
-              path="/booking-history"
-              element={
-                <ProtectedRoute allowedRoles="customer">
-                  <BookingHistory />
                 </ProtectedRoute>
               }
             />
