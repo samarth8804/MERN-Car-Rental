@@ -367,8 +367,9 @@ const CustomerDashboard = () => {
 
     try {
       setCancellingBooking(bookingId);
-      const response = await axiosInstance.put(
-        API_PATHS.BOOKING.CANCEL_BOOKING(bookingId)
+      const response = await axiosInstance.post(
+        API_PATHS.BOOKING.CANCEL_BOOKING,
+        { bookingId }
       );
 
       if (response.data.success) {
@@ -401,6 +402,10 @@ const CustomerDashboard = () => {
       </div>
     );
   }
+
+  const handleBookingUpdate = () => {
+    fetchBookings();
+  };
 
   // ✅ FIXED: Only show critical error state for authentication/permission issues
   if (criticalError) {
@@ -465,6 +470,7 @@ const CustomerDashboard = () => {
             onViewBookingDetails={handleViewBookingDetails}
             onCancelBooking={handleCancelBooking}
             onTabChange={handleTabChange}
+            onBookingUpdate={handleBookingUpdate}
           />
         )}
 
