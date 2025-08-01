@@ -17,6 +17,9 @@ import {
   FaCalendarAlt,
   FaIdCard,
   FaClock,
+  FaCheckCircle,
+  FaRoad,
+  FaSnowflake,
 } from "react-icons/fa";
 import { GiHomeGarage } from "react-icons/gi";
 import { MdDirectionsCar } from "react-icons/md";
@@ -339,5 +342,83 @@ export const vehicleSpecsConfig = [
     iconColor: "text-teal-600",
     textColor: "text-teal-900",
     valueColor: "text-teal-800",
+  },
+];
+
+// ✅ NEW: Booking Information Configuration
+export const bookingInfoConfig = [
+  {
+    icon: FaCalendarAlt,
+    label: "Start Date",
+    getValue: (booking) => booking.startDate, // Raw date, formatted in component
+    bgColor: "from-blue-50 to-blue-100",
+    borderColor: "border-blue-200",
+    iconColor: "text-blue-600",
+    textColor: "text-blue-900",
+    valueColor: "text-blue-800",
+  },
+  {
+    icon: FaCalendarAlt,
+    label: "End Date",
+    getValue: (booking) => booking.endDate, // Raw date, formatted in component
+    bgColor: "from-orange-50 to-orange-100",
+    borderColor: "border-orange-200",
+    iconColor: "text-orange-600",
+    textColor: "text-orange-900",
+    valueColor: "text-orange-800",
+  },
+  {
+    icon: FaCheckCircle,
+    label: "Actual Return",
+    getValue: (booking) => booking.actualReturnDate, // Raw date, formatted in component
+    condition: (booking) => booking.actualReturnDate && booking.isCompleted,
+    bgColor: "from-green-50 to-green-100",
+    borderColor: "border-green-200",
+    iconColor: "text-green-600",
+    textColor: "text-green-900",
+    valueColor: "text-green-800",
+  },
+  {
+    icon: FaRoute,
+    label: "Booking Type",
+    getValue: (booking) =>
+      booking.bookingType === "perDay" ? "Per Day Rental" : "Per KM Rental",
+    bgColor: "from-purple-50 to-purple-100",
+    borderColor: "border-purple-200",
+    iconColor: "text-purple-600",
+    textColor: "text-purple-900",
+    valueColor: "text-purple-800",
+  },
+  {
+    icon: FaClock,
+    label: "Duration",
+    getValue: (booking, rentalDays) =>
+      `${rentalDays} ${rentalDays === 1 ? "Day" : "Days"}`,
+    bgColor: "from-teal-50 to-teal-100",
+    borderColor: "border-teal-200",
+    iconColor: "text-teal-600",
+    textColor: "text-teal-900",
+    valueColor: "text-teal-800",
+  },
+  {
+    icon: FaRoad,
+    label: "Distance Travelled",
+    getValue: (booking) => `${booking.kmTravelled} km`,
+    condition: (booking) => booking.isCompleted && booking.kmTravelled > 0,
+    bgColor: "from-indigo-50 to-indigo-100",
+    borderColor: "border-indigo-200",
+    iconColor: "text-indigo-600",
+    textColor: "text-indigo-900",
+    valueColor: "text-indigo-800",
+  },
+  {
+    icon: FaSnowflake,
+    label: "AC Feature",
+    getValue: (booking) => (booking.isAC ? "Yes" : "No"),
+    bgColor: "from-cyan-50 to-cyan-100",
+    borderColor: "border-cyan-200",
+    iconColor: "text-cyan-600",
+    textColor: "text-cyan-900",
+    valueColor: "text-cyan-800",
   },
 ];
