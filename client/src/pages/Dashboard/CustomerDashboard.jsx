@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FaSpinner, FaExclamationTriangle } from "react-icons/fa";
 import { toast } from "react-hot-toast";
@@ -76,10 +76,8 @@ const CustomerDashboard = () => {
   // URL sync
   useEffect(() => {
     const tabFromURL = getActiveTabFromURL(location);
-    if (tabFromURL !== activeTab) {
-      setActiveTab(tabFromURL);
-    }
-  }, [location.search, activeTab]);
+    setActiveTab(tabFromURL);
+  }, [location.pathname]); // ✅ Only listen to pathname, not search params
 
   // ✅ FIXED: Data initialization - Handle each independently
   useEffect(() => {
@@ -110,14 +108,25 @@ const CustomerDashboard = () => {
   };
 
   // Tab change handler
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    const searchParams = new URLSearchParams(location.search);
-    searchParams.set("tab", tab);
-    navigate(`${location.pathname}?${searchParams.toString()}`, {
-      replace: true,
-    });
-  };
+  const handleTabChange = useCallback(
+    (tab) => {
+      // Prevent same tab clicks
+      if (tab === activeTab) return;
+
+      // Update state immediately for UI responsiveness
+      setActiveTab(tab);
+
+      // Update URL without triggering the useEffect (use setTimeout to break the call stack)
+      setTimeout(() => {
+        const searchParams = new URLSearchParams(location.search);
+        searchParams.set("tab", tab);
+        navigate(`${location.pathname}?${searchParams.toString()}`, {
+          replace: true,
+        });
+      }, 0);
+    },
+    [activeTab, location.search, location.pathname, navigate]
+  );
 
   // Enhanced date filter change handler
   const handleDateFilterChange = (field, value) => {
