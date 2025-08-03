@@ -13,6 +13,7 @@ export const API_PATHS = {
     CREATE_CUSTOMER: "api/v1/auth/create/customer",
     CREATE_CAR_OWNER: "api/v1/auth/create/car-owner",
     CREATE_DRIVER: "api/v1/auth/create/driver",
+    PROFILE: "api/v1/auth/profile",
   },
   // Admin
   ADMIN: {
@@ -37,6 +38,7 @@ export const API_PATHS = {
   },
   // Driver
   DRIVER: {
+    START_RIDE: "api/v1/driver/start-ride",
     END_RIDE: "api/v1/driver/end-ride",
     COMPLETE_RIDE: "api/v1/driver/complete-ride",
     DELETE_DRIVER: (driverId) => `api/v1/driver/deleteDriver/${driverId}`,
