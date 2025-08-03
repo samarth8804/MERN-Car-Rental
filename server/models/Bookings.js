@@ -50,6 +50,20 @@ const bookingSchema = new mongoose.Schema(
     driverRating: { type: Number, min: 1, max: 5 },
     ratingComment: { type: String, maxlength: 500 },
     ratedAt: { type: Date, default: null },
+    tempData: {
+      type: {
+        actualReturnDate: Date,
+        kmTravelled: Number,
+        totalAmount: Number,
+        lateReturnFine: Number,
+        plannedDays: Number,
+        actualDays: Number,
+        lateDays: Number,
+        minimumChargeApplied: Boolean,
+        createdAt: { type: Date, default: Date.now },
+      },
+      required: false,
+    },
   },
   { timestamps: true }
 );
