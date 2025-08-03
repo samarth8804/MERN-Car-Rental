@@ -1,9 +1,9 @@
 import React from "react";
-import { FaCalendarAlt } from "react-icons/fa";
+import { FaCalendarAlt, FaSnowflake } from "react-icons/fa";
 import { formatDateTimeIndian } from "../../utils/dashboard/dateUtils";
 import { bookingInfoConfig } from "../../utils/data";
 
-const BookingCardInfo = ({ booking, rentalDays }) => {
+const BookingCardInfo = ({ booking, rentalDays, variant = "customer" }) => {
   // ✅ Helper function to get value with date formatting
   const getSpecValue = (spec, booking, rentalDays) => {
     if (spec.label === "Start Date") {
@@ -18,9 +18,24 @@ const BookingCardInfo = ({ booking, rentalDays }) => {
     return spec.getValue(booking, rentalDays);
   };
 
-  // ✅ Filter and prepare booking info specs
+  // ✅ Filter specs based on variant
   const getBookingSpecs = () => {
-    return bookingInfoConfig
+    let specs = bookingInfoConfig;
+
+    // For driver variant, filter to show only relevant fields
+    if (variant === "driver") {
+      const driverRelevantFields = [
+        "Start Date",
+        "End Date",
+        "Actual Return",
+        "Booking Type",
+        "Duration",
+        "Distance Travelled",
+      ];
+      specs = specs.filter((spec) => driverRelevantFields.includes(spec.label));
+    }
+
+    return specs
       .filter((spec) => {
         // Show conditional fields based on booking state
         if (spec.condition) {
@@ -40,7 +55,7 @@ const BookingCardInfo = ({ booking, rentalDays }) => {
     <div className="bg-white rounded-2xl shadow-lg p-6">
       <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
         <FaCalendarAlt className="text-blue-500 mr-3" />
-        Booking Information
+        {variant === "driver" ? "Ride Information" : "Booking Information"}
       </h2>
 
       {/* ✅ Dynamic grid using bookingInfoConfig */}
@@ -63,6 +78,56 @@ const BookingCardInfo = ({ booking, rentalDays }) => {
             </div>
           );
         })}
+
+        {/* ✅ NEW: AC Status for Driver */}
+        {variant === "driver" && (
+          <div
+            className={`bg-gradient-to-br ${
+              booking.isAC
+                ? "from-blue-50 to-blue-100"
+                : "from-gray-50 to-gray-100"
+            } p-4 rounded-xl border ${
+              booking.isAC ? "border-blue-200" : "border-gray-200"
+            }`}
+          >
+            <div className="flex items-center space-x-3 mb-3">
+              <FaSnowflake
+                className={`${
+                  booking.isAC ? "text-blue-500" : "text-gray-400"
+                } text-lg`}
+              />
+              <h3
+                className={`font-semibold ${
+                  booking.isAC ? "text-blue-900" : "text-gray-900"
+                }`}
+              >
+                AC Feature
+              </h3>
+            </div>
+            <p
+              className={`${
+                booking.isAC ? "text-blue-800" : "text-gray-800"
+              } font-medium`}
+            >
+              {booking.isAC ? "Available" : "Not Available"}
+            </p>
+          </div>
+        )}
+
+        {/* Driver-specific earning info */}
+        {variant === "driver" && booking.driverEarning && (
+          <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="bg-green-100 p-2 rounded-lg">
+                <span className="text-green-600 font-bold text-lg">₹</span>
+              </div>
+              <h3 className="font-semibold text-green-900">Driver Earning</h3>
+            </div>
+            <p className="text-green-800 font-medium">
+              ₹{booking.driverEarning}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
