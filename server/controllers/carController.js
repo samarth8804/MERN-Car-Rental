@@ -230,7 +230,7 @@ exports.getCarsByCity = async (req, res) => {
       isAvailable: true,
     })
       .select(
-        "brand model year licensePlate pricePerKm pricePerDay imageUrl isAvailable city"
+        "brand model year licensePlate pricePerKm pricePerDay imageUrl isAvailable city rating totalRides"
       )
       .sort({ pricePerDay: 1 });
 
