@@ -11,8 +11,10 @@ const {
   createCustomer,
   createCarOwner,
   createDriver,
+  getProfile,
 } = require("../controllers/authController");
 
+const { protect } = require("../middlewares/authMiddleware");
 // Admin login route
 router.post("/login/admin", loginAdmin);
 
@@ -32,5 +34,12 @@ router.post("/login/car-owner", loginCarOwner);
 router.post("/register/driver", registerDriver);
 router.post("/create/driver", createDriver);
 router.post("/login/driver", loginDriver);
+
+// Common profile routes for all roles
+router.get(
+  "/profile",
+  protect(["admin", "customer", "car-owner", "driver"]),
+  getProfile
+);
 
 module.exports = router;
