@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const {
   deleteDriver,
-  endRide,
   completeRide,
   startRide,
 } = require("../controllers/driverController");
@@ -16,7 +15,6 @@ router.delete(
 
 router.post("/start-ride", protect(["driver"]), startRide);
 
-router.post("/end-ride", protect(["driver"]), endRide);
 
 router.post("/complete-ride", protect(["driver"]), completeRide);
 
