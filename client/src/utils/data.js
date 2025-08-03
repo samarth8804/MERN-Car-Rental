@@ -168,21 +168,8 @@ export const dashboardTabs = {
       icon: FaRoute,
       description: "View assigned rides",
       getBadge: (data) =>
-        data.rides?.filter((r) => r.status === "active").length || null,
-    },
-    {
-      id: "bookings",
-      label: "Bookings",
-      icon: FaClipboardList,
-      description: "Available bookings",
-      getBadge: (data) => data.availableBookings?.length || null,
-    },
-    {
-      id: "earnings",
-      label: "Earnings",
-      icon: FaWallet,
-      description: "Track your income",
-      getBadge: () => null,
+        data.rides?.filter((r) => !r.isCompleted && !r.isCancelled).length ||
+        null,
     },
     {
       id: "profile",
