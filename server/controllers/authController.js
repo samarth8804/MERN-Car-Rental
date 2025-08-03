@@ -3,6 +3,8 @@ const Customer = require("../models/Customer");
 const CarOwner = require("../models/CarOwner");
 const Driver = require("../models/Driver");
 const OTP = require("../models/OTP_Email");
+const Cars = require("../models/Cars");
+const Booking = require("../models/Bookings");
 
 const generateToken = require("../utils/generateJwtToken");
 const {
@@ -562,10 +564,159 @@ exports.loginDriver = async (req, res) => {
         status: driver.status,
         rating: driver.rating,
         totalRides: driver.totalRides,
+        earnings: driver.earnings,
+        city: driver.city,
+        ratingCount: driver.ratingCount,
       },
     });
   } catch (error) {
     res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+exports.getProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const role = req.role;
+
+    let profileData = null;
+
+    switch (role) {
+      case "admin":
+        const admin = await Admin.findById(userId).select("-password");
+        if (!admin) {
+          return res.status(404).json({
+            success: false,
+            message: "Admin profile not found",
+          });
+        }
+
+        profileData = {
+          _id: admin._id,
+          fullname: admin.fullname,
+          email: admin.email,
+          phone: admin.phone,
+          address: admin.address,
+          role: "admin",
+          createdAt: admin.createdAt,
+          updatedAt: admin.updatedAt,
+        };
+        break;
+
+      case "customer":
+        const customer = await Customer.findById(userId).select("-password");
+        if (!customer) {
+          return res.status(404).json({
+            success: false,
+            message: "Customer profile not found",
+          });
+        }
+
+        profileData = {
+          _id: customer._id,
+          fullname: customer.fullname,
+          email: customer.email,
+          phone: customer.phone,
+          address: customer.address,
+          role: "customer",
+          createdAt: customer.createdAt,
+          updatedAt: customer.updatedAt,
+        };
+        break;
+
+      case "carOwner":
+        const carOwner = await CarOwner.findById(userId).select("-password");
+        if (!carOwner) {
+          return res.status(404).json({
+            success: false,
+            message: "Car owner profile not found",
+          });
+        }
+
+        // Get car statistics for car owner
+        const ownerCars = await Cars.find({ ownerId: userId });
+        const totalCars = ownerCars.length;
+        const approvedCars = ownerCars.filter(
+          (car) => car.status === "approved"
+        ).length;
+        const totalRides = ownerCars.reduce(
+          (sum, car) => sum + (car.totalRides || 0),
+          0
+        );
+        const avgRating =
+          ownerCars.length > 0
+            ? (
+                ownerCars.reduce((sum, car) => sum + (car.rating || 0), 0) /
+                ownerCars.length
+              ).toFixed(1)
+            : 0;
+
+        profileData = {
+          _id: carOwner._id,
+          fullname: carOwner.fullname,
+          email: carOwner.email,
+          phone: carOwner.phone,
+          address: carOwner.address,
+          role: "carOwner",
+          // Car owner specific stats
+          totalCars,
+          approvedCars,
+          totalRides,
+          avgRating: parseFloat(avgRating),
+          createdAt: carOwner.createdAt,
+          updatedAt: carOwner.updatedAt,
+        };
+        break;
+
+      case "driver":
+        const driver = await Driver.findById(userId).select("-password");
+        if (!driver) {
+          return res.status(404).json({
+            success: false,
+            message: "Driver profile not found",
+          });
+        }
+
+        profileData = {
+          _id: driver._id,
+          fullname: driver.fullname,
+          email: driver.email,
+          phone: driver.phone,
+          address: driver.address,
+          role: "driver",
+          // Driver specific fields
+          licenseNumber: driver.licenseNumber,
+          city: driver.city,
+          status: driver.status,
+          rating: parseFloat(driver.rating) || 0,
+          ratingCount: driver.ratingCount || 0,
+          totalRides: driver.totalRides || 0,
+          earnings: driver.earnings || 0,
+          approvedBy: driver.approvedBy,
+          createdAt: driver.createdAt,
+          updatedAt: driver.updatedAt,
+        };
+        break;
+
+      default:
+        return res.status(400).json({
+          success: false,
+          message: "Invalid user role",
+        });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile fetched successfully",
+      user: profileData,
+    });
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    return res.status(500).json({
+      success: false,
       message: "Internal server error",
       error: error.message,
     });
