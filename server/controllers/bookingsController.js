@@ -28,8 +28,8 @@ exports.getBookingHistory = async (req, res) => {
 
     const bookings = await Bookings.find(filter)
       .populate("car", "brand model licensePlate rating ratingCount totalRides")
-      .populate("customer", "fullname email")
-      .populate("driver", "fullname email")
+      .populate("customer", "fullname email phone")
+      .populate("driver", "fullname email phone")
       .sort({ createdAt: -1 });
 
     if (bookings.length === 0) {
@@ -51,6 +51,7 @@ exports.getBookingHistory = async (req, res) => {
         customer: {
           fullname: booking.customer.fullname,
           email: booking.customer.email,
+          phone: booking.customer.phone,
         },
         driver: {
           fullname: booking.driver?.fullname || "N/A",
