@@ -92,7 +92,11 @@ const ProfileTab = ({ user }) => {
                 Account Type
               </label>
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
-                Customer
+                {user.role === "carOwner"
+                  ? "Car Owner"
+                  : user.role === "driver"
+                  ? "Driver"
+                  : user.role}
               </span>
             </div>
           </div>
