@@ -391,9 +391,7 @@ const About = () => {
                   <div
                     key={role.id}
                     className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 group cursor-pointer"
-                    onClick={() =>
-                      !isAuthenticated && navigate(`/signup/${role.id}`)
-                    }
+                    onClick={() => !isAuthenticated && navigate("/")}
                   >
                     <div
                       className={`w-12 h-12 bg-gradient-to-r ${role.gradient} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}
@@ -443,13 +441,13 @@ const About = () => {
           {!isAuthenticated ? (
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <button
-                onClick={() => navigate("/signup/customer")}
+                onClick={() => navigate("/")}
                 className="bg-blue-600 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
               >
                 Start Your Journey
               </button>
               <button
-                onClick={() => navigate("/login/customer")}
+                onClick={() => navigate("/")}
                 className="border-2 border-blue-600 text-blue-600 px-10 py-4 rounded-full font-bold text-lg hover:bg-blue-600 hover:text-white transform hover:scale-105 transition-all duration-300"
               >
                 Sign In
