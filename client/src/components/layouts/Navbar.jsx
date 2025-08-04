@@ -48,6 +48,8 @@ const Navbar = ({
   const openRoleModal = (type) => {
     if (onOpenRoleModal) {
       onOpenRoleModal(type);
+    } else {
+      navigate("/");
     }
     setShowMobileMenu(false);
   };
