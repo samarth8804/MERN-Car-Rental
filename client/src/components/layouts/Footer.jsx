@@ -100,7 +100,7 @@ const Footer = ({ onOpenRoleModal = null }) => {
                     </button>
                   ) : (
                     <Link
-                      to="/signup"
+                      to="/"
                       className="hover:text-white transition duration-300"
                     >
                       Get Started
