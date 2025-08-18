@@ -35,7 +35,7 @@ connectDB();
 
 // routes
 app.use("/api/v1/admin", adminRoutes);
-app.use("/api/v1/car-owner", carOwnerRoutes);
+app.use("/api/v1/carOwner", carOwnerRoutes);
 app.use("/api/v1/booking", bookingRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/customer", customerRoutes);
