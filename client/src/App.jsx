@@ -70,9 +70,9 @@ function App() {
               }
             />
             <Route
-              path="/dashboard/car-owner"
+              path="/dashboard/carOwner"
               element={
-                <ProtectedRoute allowedRoles="car-owner">
+                <ProtectedRoute allowedRoles="carOwner">
                   <CarOwnerDashboard />
                 </ProtectedRoute>
               }
