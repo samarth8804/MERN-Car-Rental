@@ -80,8 +80,8 @@ export const AuthProvider = ({ children }) => {
         return "/dashboard/admin";
       case "customer":
         return "/dashboard/customer";
-      case "car-owner":
-        return "/dashboard/car-owner";
+      case "carOwner":
+        return "/dashboard/carOwner";
       case "driver":
         return "/dashboard/driver";
       default:
