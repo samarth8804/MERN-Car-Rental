@@ -337,6 +337,7 @@ exports.loginCarOwner = async (req, res) => {
         email: carOwner.email,
         phone: carOwner.phone,
         address: carOwner.address,
+        role: "carOwner",
       },
     });
   } catch (error) {
