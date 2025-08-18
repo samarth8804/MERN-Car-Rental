@@ -251,3 +251,54 @@ export const getBookingDisplayInfo = (booking, rentalDays) => {
     hasDistanceTravelled: booking.isCompleted && booking.kmTravelled > 0,
   };
 };
+
+// ✅ ADD: Car Owner specific booking filtering (correct statuses)
+export const filterBookingsByStatusForCarOwner = (bookings, filter) => {
+  return bookings.filter((booking) => {
+    switch (filter) {
+      case "all":
+        return true;
+
+      case "pending":
+        // ✅ FIXED: Pending = Driver assigned, not started yet
+        return (
+          booking.driver && // Driver is assigned (booking exists = driver assigned)
+          !booking.isStarted &&
+          !booking.isCompleted &&
+          !booking.isCancelled
+        );
+
+      case "active":
+        // ✅ Ride in progress
+        return (
+          booking.isStarted && !booking.isCompleted && !booking.isCancelled
+        );
+
+      case "completed":
+        return booking.isCompleted;
+
+      case "cancelled":
+        return booking.isCancelled;
+
+      default:
+        return true;
+    }
+  });
+};
+
+// ✅ ADD: Car Owner specific stats calculation
+export const getCarOwnerBookingStats = (bookings) => {
+  const safeBookings = Array.isArray(bookings) ? bookings : [];
+
+  return {
+    total: safeBookings.length,
+    pending: safeBookings.filter(
+      (b) => b.driver && !b.isStarted && !b.isCompleted && !b.isCancelled
+    ).length,
+    active: safeBookings.filter(
+      (b) => b.isStarted && !b.isCompleted && !b.isCancelled
+    ).length,
+    completed: safeBookings.filter((b) => b.isCompleted).length,
+    cancelled: safeBookings.filter((b) => b.isCancelled).length,
+  };
+};
