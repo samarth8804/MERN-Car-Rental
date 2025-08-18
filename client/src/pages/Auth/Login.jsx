@@ -28,7 +28,7 @@ const Login = () => {
 
   // ✅ Validate role parameter first
   useEffect(() => {
-    const validRoles = ["customer", "car-owner", "driver", "admin"];
+    const validRoles = ["customer", "carOwner", "driver", "admin"];
     if (!validRoles.includes(role)) {
       navigate("/login/customer"); // Redirect to default role if invalid
       return;
@@ -66,7 +66,7 @@ const Login = () => {
         return API_PATHS.AUTH.LOGIN_ADMIN;
       case "customer":
         return API_PATHS.AUTH.LOGIN_CUSTOMER;
-      case "car-owner":
+      case "carOwner":
         return API_PATHS.AUTH.LOGIN_CAR_OWNER;
       case "driver":
         return API_PATHS.AUTH.LOGIN_DRIVER;
