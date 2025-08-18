@@ -5,13 +5,13 @@ export const API_PATHS = {
   AUTH: {
     LOGIN_ADMIN: "api/v1/auth/login/admin",
     LOGIN_CUSTOMER: "api/v1/auth/login/customer",
-    LOGIN_CAR_OWNER: "api/v1/auth/login/car-owner",
+    LOGIN_CAR_OWNER: "api/v1/auth/login/carOwner",
     LOGIN_DRIVER: "api/v1/auth/login/driver",
     REGISTER_CUSTOMER: "api/v1/auth/register/customer",
-    REGISTER_CAR_OWNER: "api/v1/auth/register/car-owner",
+    REGISTER_CAR_OWNER: "api/v1/auth/register/carOwner",
     REGISTER_DRIVER: "api/v1/auth/register/driver",
     CREATE_CUSTOMER: "api/v1/auth/create/customer",
-    CREATE_CAR_OWNER: "api/v1/auth/create/car-owner",
+    CREATE_CAR_OWNER: "api/v1/auth/create/carOwner",
     CREATE_DRIVER: "api/v1/auth/create/driver",
     PROFILE: "api/v1/auth/profile",
   },
@@ -32,9 +32,9 @@ export const API_PATHS = {
   },
   // Car Owner
   CAR_OWNER: {
-    ADD_CAR: "api/v1/car-owner/add-car",
-    UPDATE_CAR: (carId) => `api/v1/car-owner/update-car/${carId}`,
-    GET_MY_CARS: "api/v1/car-owner/my-cars",
+    ADD_CAR: "api/v1/carOwner/add-car",
+    UPDATE_CAR: (carId) => `api/v1/carOwner/update-car/${carId}`,
+    GET_MY_CARS: "api/v1/carOwner/my-cars",
   },
   // Driver
   DRIVER: {
