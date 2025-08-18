@@ -24,13 +24,27 @@ import {
 import { getBookingFilterCounts } from "../../utils/dashboard/bookingUtils";
 import { getDashboardTabs } from "../../utils/data";
 
+// ✅ ADD: Create a specific function for customer tabs (around line 25)
+const getCustomerActiveTab = (location) => {
+  const urlParams = new URLSearchParams(location.search);
+  const tabFromQuery = urlParams.get("tab");
+
+  const validTabs = ["cars", "bookings", "profile"];
+
+  if (tabFromQuery && validTabs.includes(tabFromQuery)) {
+    return tabFromQuery;
+  }
+
+  return "cars"; // Default tab for customer
+};
+
 const CustomerDashboard = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   // State management
-  const [activeTab, setActiveTab] = useState(getActiveTabFromURL(location));
+  const [activeTab, setActiveTab] = useState(getCustomerActiveTab(location)); // ✅ FIXED: Use proper function
   const [cars, setCars] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -75,9 +89,15 @@ const CustomerDashboard = () => {
 
   // URL sync
   useEffect(() => {
-    const tabFromURL = getActiveTabFromURL(location);
-    setActiveTab(tabFromURL);
-  }, [location.pathname]); // ✅ Only listen to pathname, not search params
+    const newTab = getCustomerActiveTab(location);
+    if (newTab !== activeTab) {
+      console.log("🔄 [CustomerDashboard] URL tab change detected:", {
+        from: activeTab,
+        to: newTab,
+      });
+      setActiveTab(newTab);
+    }
+  }, [location.search, location.pathname]); // ✅ FIXED: Listen to both pathname and search
 
   // ✅ FIXED: Data initialization - Handle each independently
   useEffect(() => {
@@ -107,25 +127,19 @@ const CustomerDashboard = () => {
     }
   };
 
-  // Tab change handler
+  // ✅ FIXED: Tab change handler
   const handleTabChange = useCallback(
     (tab) => {
-      // Prevent same tab clicks
       if (tab === activeTab) return;
 
-      // Update state immediately for UI responsiveness
-      setActiveTab(tab);
+      console.log(
+        `🔄 [CustomerDashboard] Changing tab from ${activeTab} to ${tab}`
+      );
 
-      // Update URL without triggering the useEffect (use setTimeout to break the call stack)
-      setTimeout(() => {
-        const searchParams = new URLSearchParams(location.search);
-        searchParams.set("tab", tab);
-        navigate(`${location.pathname}?${searchParams.toString()}`, {
-          replace: true,
-        });
-      }, 0);
+      setActiveTab(tab);
+      navigate(`/dashboard/customer?tab=${tab}`, { replace: true });
     },
-    [activeTab, location.search, location.pathname, navigate]
+    [activeTab, navigate]
   );
 
   // Enhanced date filter change handler
@@ -444,6 +458,7 @@ const CustomerDashboard = () => {
         dashboardTitle="Customer Dashboard"
         showNotifications={activeBookingsCount > 0}
         notificationCount={activeBookingsCount}
+        userRole={user?.role} // ✅ ENSURE: User role is passed
       />
 
       <CustomerDashboardTabs
