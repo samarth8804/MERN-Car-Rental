@@ -25,9 +25,9 @@ router.post("/login/customer", loginCustomer);
 
 // Car Owner registration and login routes
 
-router.post("/register/car-owner", registerCarOwner);
-router.post("/create/car-owner", createCarOwner);
-router.post("/login/car-owner", loginCarOwner);
+router.post("/register/carOwner", registerCarOwner);
+router.post("/create/carOwner", createCarOwner);
+router.post("/login/carOwner", loginCarOwner);
 
 // Driver registration and login routes
 
@@ -38,7 +38,7 @@ router.post("/login/driver", loginDriver);
 // Common profile routes for all roles
 router.get(
   "/profile",
-  protect(["admin", "customer", "car-owner", "driver"]),
+  protect(["admin", "customer", "carOwner", "driver"]),
   getProfile
 );
 
