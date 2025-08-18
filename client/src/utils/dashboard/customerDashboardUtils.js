@@ -38,8 +38,16 @@ export const filterCarsBySearch = (cars, searchTerm) => {
 
 // Get active tab from URL
 export const getActiveTabFromURL = (location) => {
-  const params = new URLSearchParams(location.search);
-  return params.get("tab") || "cars";
+  const urlParams = new URLSearchParams(location.search);
+  const tabFromQuery = urlParams.get("tab");
+
+  const validTabs = ["cars", "bookings", "profile"];
+
+  if (tabFromQuery && validTabs.includes(tabFromQuery)) {
+    return tabFromQuery;
+  }
+
+  return "cars"; // Default tab for customer
 };
 
 // Get active bookings count for notifications
