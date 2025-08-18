@@ -53,7 +53,7 @@ const Signup = () => {
 
   // Validate role parameter
   useEffect(() => {
-    const validRoles = ["customer", "car-owner", "driver"];
+    const validRoles = ["customer", "carOwner", "driver"];
     if (!validRoles.includes(role)) {
       navigate("/signup/customer");
       return;
@@ -112,7 +112,7 @@ const Signup = () => {
     switch (userRole) {
       case "customer":
         return API_PATHS.AUTH.REGISTER_CUSTOMER;
-      case "car-owner":
+      case "carOwner":
         return API_PATHS.AUTH.REGISTER_CAR_OWNER;
       case "driver":
         return API_PATHS.AUTH.REGISTER_DRIVER;
@@ -126,7 +126,7 @@ const Signup = () => {
     switch (userRole) {
       case "customer":
         return API_PATHS.AUTH.CREATE_CUSTOMER;
-      case "car-owner":
+      case "carOwner":
         return API_PATHS.AUTH.CREATE_CAR_OWNER;
       case "driver":
         return API_PATHS.AUTH.CREATE_DRIVER;
@@ -137,9 +137,8 @@ const Signup = () => {
 
   // ✅ Form validation - Updated to properly use the validation function
   const validateForm = () => {
-    
     const validation = validateSignupForm(formData, role, loading);
-    
+
     setErrors(validation.errors);
     return validation.isValid;
   };
@@ -175,7 +174,6 @@ const Signup = () => {
 
   // ✅ Handle terms acceptance change
   const handleTermsChange = (accepted) => {
-    
     setFormData((prev) => ({
       ...prev,
       acceptTerms: accepted,
@@ -194,16 +192,11 @@ const Signup = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    
-
     // ✅ Validate form before proceeding
     if (!validateForm()) {
-      
       toast.error("Please fill all required fields correctly");
       return;
     }
-
-    
 
     setOtpRetries(0);
     setLoading(true);
@@ -297,7 +290,7 @@ const Signup = () => {
               duration: 5000,
             }
           );
-        } else if (role === "car-owner") {
+        } else if (role === "carOwner") {
           toast.success("Welcome! You can now start listing your vehicles.", {
             duration: 4000,
           });
