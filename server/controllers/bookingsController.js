@@ -15,8 +15,19 @@ exports.getBookingHistory = async (req, res) => {
     } else if (role === "driver") {
       filter.driver = userId;
     } else if (role === "carOwner") {
-      const ownerCars = await Cars.find({ ownerId: userId }).select("_id");
-      filter.car = { $in: ownerCars.map((c) => c._id) };
+      const ownerCars = await Cars.find({ ownerId: userId }).select(
+        "_id brand model"
+      );
+      if (ownerCars.length === 0) {
+        return res.status(200).json({
+          success: true,
+          message: "No bookings found for your cars",
+          bookingHistory: [],
+        });
+      }
+
+      const carIds = ownerCars.map((car) => car._id);
+      filter.car = { $in: carIds };
     } else if (role === "admin") {
       // Admin can see all bookings
     } else {
@@ -27,15 +38,19 @@ exports.getBookingHistory = async (req, res) => {
     }
 
     const bookings = await Bookings.find(filter)
-      .populate("car", "brand model licensePlate rating ratingCount totalRides")
+      .populate(
+        "car",
+        "brand model licensePlate rating ratingCount totalRides ownerId"
+      )
       .populate("customer", "fullname email phone")
       .populate("driver", "fullname email phone")
       .sort({ createdAt: -1 });
 
     if (bookings.length === 0) {
-      return res.status(404).json({
-        success: false,
+      return res.status(200).json({
+        success: true,
         message: "No bookings found",
+        bookingHistory: [],
       });
     }
 
@@ -43,20 +58,31 @@ exports.getBookingHistory = async (req, res) => {
     const bookingHistory = bookings.map((booking) => {
       const commonFields = {
         _id: booking._id,
-        car: {
-          brand: booking.car.brand,
-          model: booking.car.model,
-          licensePlate: booking.car.licensePlate,
-        },
-        customer: {
-          fullname: booking.customer.fullname,
-          email: booking.customer.email,
-          phone: booking.customer.phone,
-        },
-        driver: {
-          fullname: booking.driver?.fullname || "N/A",
-          email: booking.driver?.email || "N/A",
-        },
+        car: booking.car
+          ? {
+              _id: booking.car._id,
+              brand: booking.car.brand,
+              model: booking.car.model,
+              licensePlate: booking.car.licensePlate,
+              rating: booking.car.rating,
+              ratingCount: booking.car.ratingCount,
+              totalRides: booking.car.totalRides,
+              ownerId: booking.car.ownerId,
+            }
+          : null,
+        customer: booking.customer
+          ? {
+              fullname: booking.customer.fullname,
+              email: booking.customer.email,
+              phone: booking.customer.phone,
+            }
+          : null,
+        driver: booking.driver
+          ? {
+              fullname: booking.driver?.fullname || "N/A",
+              email: booking.driver?.email || "N/A",
+            }
+          : null,
         pickupLocation: booking.pickupLocation,
         dropLocation: booking.dropLocation,
         startDate: booking.startDate,
@@ -94,6 +120,7 @@ exports.getBookingHistory = async (req, res) => {
       success: true,
       message: "Booking history fetched successfully",
       bookingHistory,
+      count: bookingHistory.length,
     });
   } catch (error) {
     console.error("Error fetching booking history:", error);
