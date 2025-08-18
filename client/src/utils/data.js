@@ -20,6 +20,7 @@ import {
   FaCheckCircle,
   FaRoad,
   FaSnowflake,
+  FaChartLine, // Add this import
 } from "react-icons/fa";
 import { GiHomeGarage } from "react-icons/gi";
 import { MdDirectionsCar } from "react-icons/md";
@@ -42,7 +43,7 @@ export const roles = [
     },
   },
   {
-    id: "car-owner",
+    id: "carOwner",
     title: "Car Owner",
     description: "List your cars and earn money",
     icon: GiHomeGarage,
@@ -115,35 +116,30 @@ export const dashboardTabs = {
     },
   ],
 
-  "car-owner": [
+  // ✅ FIXED: Single carOwner configuration
+  carOwner: [
     {
       id: "overview",
       label: "Overview",
-      icon: FaChartBar,
-      description: "Dashboard overview",
+      icon: FaChartLine, // Changed from FaChartBar to FaChartLine
+      description: "Dashboard overview and stats",
       getBadge: () => null,
     },
     {
       id: "cars",
       label: "My Cars",
       icon: FaCar,
-      description: "Manage your vehicles",
+      description: "Manage your vehicle fleet",
       getBadge: (data) => data.cars?.length || null,
     },
     {
       id: "bookings",
       label: "Bookings",
-      icon: FaClipboardList,
-      description: "View car bookings",
+      icon: FaHistory,
+      description: "View car rental bookings",
       getBadge: (data) =>
-        data.bookings?.filter((b) => b.status === "pending").length || null,
-    },
-    {
-      id: "earnings",
-      label: "Earnings",
-      icon: FaWallet,
-      description: "Track your income",
-      getBadge: () => null,
+        data.bookings?.filter((b) => !b.isCompleted && !b.isCancelled).length ||
+        null,
     },
     {
       id: "profile",
@@ -245,11 +241,10 @@ export const bookingFilters = {
     { key: "completed", label: "Completed" },
     { key: "cancelled", label: "Cancelled" },
   ],
-  "car-owner": [
+  carOwner: [
     { key: "all", label: "All Bookings" },
-    { key: "pending", label: "Pending" },
-    { key: "confirmed", label: "Confirmed" },
-    { key: "active", label: "Active" },
+    { key: "pending", label: "Pending Start" }, // ✅ UPDATED: Driver assigned, waiting to start
+    { key: "active", label: "Active Rides" }, // ✅ UPDATED: Currently in progress
     { key: "completed", label: "Completed" },
     { key: "cancelled", label: "Cancelled" },
   ],
