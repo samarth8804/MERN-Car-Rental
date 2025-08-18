@@ -23,6 +23,7 @@ const Navbar = ({
   dashboardTitle = "Dashboard",
   showNotifications = false,
   notificationCount = 0,
+  userRole = null,
 }) => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -55,12 +56,14 @@ const Navbar = ({
   };
 
   const handleNotificationClick = () => {
-    // If already on dashboard, go to bookings tab
+    // Use prop role first, then fallback to user context
+    const targetRole = userRole || user?.role || "customer";
+    const targetUrl = `/dashboard/${targetRole}?tab=bookings`;
+
     if (isDashboard) {
-      // Use window.location if you don't have access to navigate here
-      window.location.href = "/dashboard/customer?tab=bookings";
+      navigate(targetUrl, { replace: true });
     } else {
-      navigate("/dashboard/customer?tab=bookings");
+      navigate(targetUrl);
     }
   };
 
