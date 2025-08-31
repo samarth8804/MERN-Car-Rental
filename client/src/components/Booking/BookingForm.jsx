@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { FaMapMarkerAlt, FaSnowflake, FaCar, FaSpinner } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import DateFilterSection from "../Dashboard/DateFilterSection";
 import LocationSelector from "./LocationSelector";
 import BookingTypeSelector from "./BookingTypeSelector";
 import LocationMap from "./LocationMap";
+import { checkCarAvailability } from "../../utils/dashboard/customerDashboardUtils";
 
 const BookingForm = ({
   car,
@@ -15,6 +16,58 @@ const BookingForm = ({
   pricingDetails,
 }) => {
   const [clickedLocation, setClickedLocation] = useState(null);
+  const [availabilityState, setAvailabilityState] = useState({
+    checking: false,
+    isAvailable: null,
+    error: null,
+  });
+
+  const checkAvailability = useCallback(
+    async (startDate, endDate) => {
+      console.log("checkAvailability called with:", {
+        startDate,
+        endDate,
+        carId: car?._id,
+      });
+
+      if (!startDate || !endDate || !car?._id) {
+        console.log("Missing required data:", {
+          startDate,
+          endDate,
+          carId: car?._id,
+        });
+        return;
+      }
+
+      setAvailabilityState((prev) => ({ ...prev, checking: true }));
+
+      try {
+        console.log("About to call checkCarAvailability API...");
+        const result = await checkCarAvailability(car._id, startDate, endDate);
+        console.log("API result:", result);
+
+        setAvailabilityState({
+          checking: false,
+          isAvailable: result.isAvailable,
+          error: result.success ? null : result.error,
+        });
+
+        if (!result.isAvailable && result.success) {
+          toast.error(
+            "Car is not available for selected dates. Please choose different dates."
+          );
+        }
+      } catch (error) {
+        console.error("Error in checkAvailability:", error);
+        setAvailabilityState({
+          checking: false,
+          isAvailable: false,
+          error: "Failed to check availability",
+        });
+      }
+    },
+    [car?._id]
+  );
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -85,6 +138,13 @@ const BookingForm = ({
 
   const handleDateFilterChange = (field, value) => {
     handleInputChange(field, value);
+
+    const newStartDate = field === "startDate" ? value : formData.startDate;
+    const newEndDate = field === "endDate" ? value : formData.endDate;
+
+    if (newStartDate && newEndDate) {
+      setTimeout(() => checkAvailability(newStartDate, newEndDate), 500);
+    }
   };
 
   const handleClearDates = () => {
@@ -95,23 +155,17 @@ const BookingForm = ({
     }));
   };
 
-  // ✅ IMPROVED: More flexible form validation
   const isFormValid = () => {
-    
-
-    // Check dates
     const datesValid =
       formData.startDate &&
       formData.endDate &&
       formData.startDate.trim() !== "" &&
       formData.endDate.trim() !== "";
 
-    // ✅ FLEXIBLE: Check if pickup location has address (coordinates optional for manual entry)
     const pickupValid =
       formData.pickupLocation?.address &&
       formData.pickupLocation.address.trim() !== "";
 
-    // ✅ FLEXIBLE: Check if drop location has address (coordinates optional for manual entry)
     const dropValid =
       formData.dropLocation?.address &&
       formData.dropLocation.address.trim() !== "";
@@ -124,14 +178,31 @@ const BookingForm = ({
       formData.dropLocation?.coordinates?.latitude != null &&
       formData.dropLocation?.coordinates?.longitude != null;
 
+    // ✅ Fix: Better availability validation logic
+    const availabilityValid =
+      !datesValid || // If dates not selected, skip availability check
+      (!availabilityState.checking && // Not currently checking AND
+        (availabilityState.isAvailable === true || // Either available is true
+          availabilityState.isAvailable === null)); // Or we haven't checked yet (null)
 
     const overallValid =
       datesValid &&
       pickupValid &&
       dropValid &&
       pickupHasCoords &&
-      dropHasCoords;
-    console.log("Overall valid:", overallValid);
+      dropHasCoords &&
+      availabilityValid;
+
+    console.log("Form validation:", {
+      datesValid,
+      pickupValid,
+      dropValid,
+      pickupHasCoords,
+      dropHasCoords,
+      availabilityValid,
+      availabilityState,
+      overallValid,
+    });
 
     return overallValid;
   };
@@ -139,13 +210,11 @@ const BookingForm = ({
   const handleSubmit = (e) => {
     e.preventDefault();
 
-
     if (!isFormValid()) {
       toast.error("Please fill in all required fields");
       return;
     }
 
-    // ✅ WARNING: Warn user about manual addresses without coordinates
     const pickupHasCoords =
       formData.pickupLocation?.coordinates?.latitude != null;
     const dropHasCoords = formData.dropLocation?.coordinates?.latitude != null;
@@ -164,47 +233,6 @@ const BookingForm = ({
     <div className="bg-white rounded-2xl shadow-lg p-6">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Booking Details</h2>
 
-      {/* ✅ UPDATED DEBUG PANEL */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4 text-xs">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="font-medium text-yellow-700">Form Status:</p>
-            <p className={isFormValid() ? "text-green-600" : "text-red-600"}>
-              {isFormValid() ? "✅ READY TO BOOK" : "❌ INCOMPLETE"}
-            </p>
-          </div>
-
-          <div>
-            <p className="font-medium text-yellow-700">Dates:</p>
-            <p>
-              {formData.startDate && formData.endDate ? "✅ Set" : "❌ Missing"}
-            </p>
-          </div>
-
-          <div>
-            <p className="font-medium text-yellow-700">Pickup:</p>
-            <p>{formData.pickupLocation?.address ? "✅ Set" : "❌ Missing"}</p>
-            <p className="text-xs">
-              Coords:{" "}
-              {formData.pickupLocation?.coordinates?.latitude != null
-                ? "✅"
-                : "📍 Pin on map"}
-            </p>
-          </div>
-
-          <div>
-            <p className="font-medium text-yellow-700">Drop:</p>
-            <p>{formData.dropLocation?.address ? "✅ Set" : "❌ Missing"}</p>
-            <p className="text-xs">
-              Coords:{" "}
-              {formData.dropLocation?.coordinates?.latitude != null
-                ? "✅"
-                : "📍 Pin on map"}
-            </p>
-          </div>
-        </div>
-      </div>
-
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Date Selection */}
         <DateFilterSection
@@ -215,6 +243,46 @@ const BookingForm = ({
           showClearButton={false}
           required={true}
         />
+
+        {/* Availability Status - NEW SECTION */}
+        {formData.startDate && formData.endDate && (
+          <div className="mt-4">
+            {availabilityState.checking && (
+              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <FaSpinner className="animate-spin text-yellow-600" />
+                  <span className="text-sm font-medium text-yellow-800">
+                    Checking car availability...
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {!availabilityState.checking &&
+              availabilityState.isAvailable === true && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-green-800">
+                      ✅ Car is available for selected dates
+                    </span>
+                  </div>
+                </div>
+              )}
+
+            {!availabilityState.checking &&
+              availabilityState.isAvailable === false && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-red-800">
+                      ❌ Car is not available for selected dates
+                    </span>
+                  </div>
+                </div>
+              )}
+          </div>
+        )}
 
         {/* Booking Type Selection */}
         <BookingTypeSelector
