@@ -23,6 +23,8 @@ export const API_PATHS = {
     GET_ALL_DRIVERS: "api/v1/admin/getAllDrivers",
     APPROVE_DRIVER: (driverId) => `api/v1/admin/approveDriver/${driverId}`,
     REJECT_DRIVER: (driverId) => `api/v1/admin/rejectDriver/${driverId}`,
+    GET_ALL_CUSTOMERS: "api/v1/admin/getAllCustomers",
+    GET_ALL_CAR_OWNERS: "api/v1/admin/getAllCarOwners",
   },
   // Customer
   CUSTOMER: {
@@ -49,6 +51,7 @@ export const API_PATHS = {
     DELETE_CAR: (carId) => `api/v1/car/delete-car/${carId}`,
     GET_CITIES: "api/v1/car/cities",
     GET_CARS_BY_CITY: (city) => `api/v1/car/get-cars/${city}`,
+    CHECK_AVAILABILITY: "/api/v1/car/check-availability",
   },
   // Booking
   BOOKING: {
