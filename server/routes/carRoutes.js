@@ -4,6 +4,7 @@ const {
   deleteCar,
   getAvailableCities,
   getCarsByCity,
+  checkCarAvailability,
 } = require("../controllers/carController");
 const { protect } = require("../middlewares/authMiddleware");
 const router = express.Router();
@@ -20,5 +21,8 @@ router.get(
 
 // Car Owner or admin deletes a Car
 router.delete("/delete-car/:carId", protect(["carOwner", "admin"]), deleteCar);
+
+// Check car availability for specific dates
+router.post("/check-availability", checkCarAvailability);
 
 module.exports = router;
