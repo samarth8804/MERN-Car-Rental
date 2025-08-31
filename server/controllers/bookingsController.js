@@ -280,6 +280,13 @@ exports.cancelBooking = async (req, res) => {
       });
     }
 
+    if (booking.isStarted && !booking.isCompleted) {
+      return res.status(400).json({
+        success: false,
+        message: "Booking has already started and cannot be cancelled",
+      });
+    }
+
     // Calculate cancellation fee if applicable
     let cancellationFine = 0;
     if (role === "customer") {
