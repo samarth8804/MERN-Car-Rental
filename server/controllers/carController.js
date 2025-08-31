@@ -276,9 +276,6 @@ exports.getCarsByCity = async (req, res) => {
 
 exports.checkCarAvailability = async (req, res) => {
   try {
-    console.log("=== AVAILABILITY CHECK START ===");
-    console.log("Request body:", req.body);
-
     const { carId, startDate, endDate } = req.body;
 
     if (!carId || !startDate || !endDate) {
@@ -292,11 +289,8 @@ exports.checkCarAvailability = async (req, res) => {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    console.log("Parsed dates:", { start, end });
-
     // Validate that start date is before end date
     if (start > end) {
-      console.log("Invalid date range: start > end");
       return res.status(400).json({
         success: false,
         message: "Start date must be before or same as end date",
@@ -305,16 +299,6 @@ exports.checkCarAvailability = async (req, res) => {
 
     // First, let's see ALL bookings for this car
     const allBookingsForCar = await Booking.find({ car: carId });
-    console.log(
-      "All bookings for car:",
-      allBookingsForCar.map((b) => ({
-        id: b._id,
-        startDate: b.startDate,
-        endDate: b.endDate,
-        isCancelled: b.isCancelled,
-        isCompleted: b.isCompleted,
-      }))
-    );
 
     // ✅ FIXED: For full day rentals, no same-day transitions allowed
     // Conflict exists if dates overlap OR touch (same day)
@@ -326,26 +310,26 @@ exports.checkCarAvailability = async (req, res) => {
       isCompleted: { $ne: true },
     }).populate("customer", "fullname email");
 
-    console.log("Query used for conflicts:", {
-      car: carId,
-      startDate: { $lte: end }, // <= instead of <
-      endDate: { $gte: start }, // >= instead of >
-      isCancelled: { $ne: true },
-      isCompleted: { $ne: true },
-    });
+    // console.log("Query used for conflicts:", {
+    //   car: carId,
+    //   startDate: { $lte: end }, // <= instead of <
+    //   endDate: { $gte: start }, // >= instead of >
+    //   isCancelled: { $ne: true },
+    //   isCompleted: { $ne: true },
+    // });
 
-    console.log(
-      "Conflicting bookings found:",
-      conflictingBookings.map((b) => ({
-        id: b._id,
-        startDate: b.startDate,
-        endDate: b.endDate,
-        isCancelled: b.isCancelled,
-        isCompleted: b.isCompleted,
-        customer: b.customerId?.fullname,
-        conflictReason: `Existing: ${b.startDate.toDateString()} to ${b.endDate.toDateString()}, Requested: ${start.toDateString()} to ${end.toDateString()}`,
-      }))
-    );
+    // console.log(
+    //   "Conflicting bookings found:",
+    //   conflictingBookings.map((b) => ({
+    //     id: b._id,
+    //     startDate: b.startDate,
+    //     endDate: b.endDate,
+    //     isCancelled: b.isCancelled,
+    //     isCompleted: b.isCompleted,
+    //     customer: b.customerId?.fullname,
+    //     conflictReason: `Existing: ${b.startDate.toDateString()} to ${b.endDate.toDateString()}, Requested: ${start.toDateString()} to ${end.toDateString()}`,
+    //   }))
+    // );
 
     const isAvailable = conflictingBookings.length === 0;
 
@@ -354,7 +338,6 @@ exports.checkCarAvailability = async (req, res) => {
       conflictCount: conflictingBookings.length,
       requestedPeriod: `${start.toDateString()} to ${end.toDateString()}`,
     });
-    console.log("=== AVAILABILITY CHECK END ===");
 
     res.status(200).json({
       success: true,

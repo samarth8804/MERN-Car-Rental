@@ -106,18 +106,17 @@ const CarOwnerDashboard = () => {
   // ✅ FIXED: Fetch bookings for car owner's cars
   const fetchBookings = async (carList = cars) => {
     try {
-      console.log("Fetching bookings for cars:", carList);
-
+      
       const response = await axiosInstance.get(
         API_PATHS.BOOKING.GET_BOOKING_HISTORY
       );
 
       if (response.data.success) {
         const allBookings = response.data.bookingHistory || [];
-        console.log("All bookings received:", allBookings.length);
+ 
 
         const carIds = carList.map((car) => car._id);
-        console.log("Car IDs to filter by:", carIds);
+
 
         const ownerBookings = allBookings.filter((booking) => {
           const carId = booking.car?._id || booking.car;
@@ -128,11 +127,10 @@ const CarOwnerDashboard = () => {
           return isOwnerBooking;
         });
 
-        console.log("Filtered owner bookings:", ownerBookings.length);
 
         setBookings(Array.isArray(ownerBookings) ? ownerBookings : []);
       } else {
-        console.log("No booking data received or unsuccessful response");
+        
         setBookings([]);
       }
     } catch (error) {
@@ -194,7 +192,6 @@ const CarOwnerDashboard = () => {
     (tab) => {
       if (tab === activeTab) return;
 
-      console.log(`Changing tab from ${activeTab} to ${tab}`);
 
       setActiveTab(tab);
       navigate(`/dashboard/carOwner?tab=${tab}`, { replace: true });
@@ -216,7 +213,7 @@ const CarOwnerDashboard = () => {
   };
 
   const handleDeleteCar = (car) => {
-    console.log("🗑️ [DEBUG] Delete car clicked:", car);
+
     setModalMode("delete");
     setSelectedCarForEdit(car);
     setShowUnifiedModal(true);
@@ -239,7 +236,6 @@ const CarOwnerDashboard = () => {
   };
 
   const handleCarDeleted = () => {
-    console.log("🗑️ [DEBUG] Car deleted successfully");
     fetchCars(); // Refresh the cars list
     setShowUnifiedModal(false);
   };
@@ -273,7 +269,6 @@ const CarOwnerDashboard = () => {
           JSON.stringify(fetchedCars) !== JSON.stringify(cars);
 
         if (carsChanged) {
-          console.log("📊 [AUTO-REFRESH] Car data updated");
           setCars(fetchedCars);
 
           if (fetchedCars.length > 0) {
@@ -300,7 +295,7 @@ const CarOwnerDashboard = () => {
           JSON.stringify(allBookings) !== JSON.stringify(bookings);
 
         if (bookingsChanged) {
-          console.log("📊 [AUTO-REFRESH] Booking data updated");
+         
           setBookings(allBookings);
         }
       }
@@ -311,7 +306,6 @@ const CarOwnerDashboard = () => {
 
   // ✅ ADD: Manual refresh button
   const handleManualRefresh = async () => {
-    console.log("🔄 [MANUAL] Manual refresh triggered");
     toast.loading("Refreshing data...", { id: "refresh" });
 
     try {
@@ -332,7 +326,7 @@ const CarOwnerDashboard = () => {
   useEffect(() => {
     if (autoRefresh && isAuthenticated && user?.role === "carOwner") {
       refreshIntervalRef.current = setInterval(() => {
-        console.log("🔄 [AUTO-REFRESH] Refreshing dashboard data...");
+        
         fetchCarsQuietly();
       }, 30000);
 
@@ -403,8 +397,6 @@ const CarOwnerDashboard = () => {
     );
   }
 
-  console.log("Current active tab:", activeTab);
-  console.log("Available tabs:", tabs);
 
   return (
     <div className="min-h-screen bg-gray-50">

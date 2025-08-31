@@ -132,9 +132,6 @@ const CustomerDashboard = () => {
     (tab) => {
       if (tab === activeTab) return;
 
-      console.log(
-        `🔄 [CustomerDashboard] Changing tab from ${activeTab} to ${tab}`
-      );
 
       setActiveTab(tab);
       navigate(`/dashboard/customer?tab=${tab}`, { replace: true });

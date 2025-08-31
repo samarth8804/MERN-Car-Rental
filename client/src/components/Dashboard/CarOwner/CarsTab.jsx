@@ -111,7 +111,7 @@ const CarsTab = ({
 
   // ✅ ADD: Delete car from details modal handler
   const handleDeleteCarFromDetailsModal = (car) => {
-    console.log("Delete car from details modal:", car);
+
     // Close the details modal first
     setShowCarDetailsModal(false);
     setSelectedCar(null);
@@ -128,7 +128,7 @@ const CarsTab = ({
 
   // ✅ ADD: Delete car handler (around line 90)
   const handleDeleteCar = (car) => {
-    console.log("Delete car button clicked:", car);
+
     if (onDeleteCar) {
       onDeleteCar(car);
     }

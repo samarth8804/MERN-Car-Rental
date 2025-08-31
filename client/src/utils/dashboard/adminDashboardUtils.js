@@ -96,9 +96,7 @@ export const calculateCarEarningsDetailed = (carId, allBookings) => {
     return bookingCarId && bookingCarId.toString() === carIdString;
   });
 
-  console.log(
-    `🚗 Car ${carIdString} - Found ${carBookings.length} total bookings`
-  );
+  
 
   // Filter completed bookings
   const completedBookings = carBookings.filter(
@@ -107,18 +105,13 @@ export const calculateCarEarningsDetailed = (carId, allBookings) => {
       (booking.isCancelled === true && booking.isCompleted === false)
   );
 
-  console.log(
-    `✅ Car ${carIdString} - Found ${completedBookings.length} completed bookings`
-  );
 
   // Calculate total earnings
   const totalEarnings = completedBookings.reduce((sum, booking) => {
     const amount = booking.totalAmount || 0;
-    console.log(`💰 Booking ${booking._id}: ₹${amount}`);
     return sum + amount;
   }, 0);
 
-  console.log(`💵 Car ${carIdString} - Total earnings: ₹${totalEarnings}`);
 
   // Calculate average earning per booking
   const averageEarningPerBooking =
@@ -512,17 +505,12 @@ export const fetchAdminCars = async () => {
     const cars = carsResponse.data.cars || [];
     const bookings = bookingsResponse.data.bookingHistory || [];
 
-    console.log("📊 Fetched cars:", cars.length);
-    console.log("📊 Fetched bookings:", bookings.length);
 
-    // Debug booking structure with first car if available
 
     // Transform car data with earnings calculation
     const carsWithEarnings = cars.map((car) => {
       const transformedCar = transformCarData(car, bookings);
-      console.log(
-        `🚗 Car ${car._id} earnings: ₹${transformedCar.totalEarnings}`
-      );
+      
       return transformedCar;
     });
 

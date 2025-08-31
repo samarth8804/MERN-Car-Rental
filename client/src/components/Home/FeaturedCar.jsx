@@ -65,7 +65,7 @@ const FeaturedCars = ({ onOpenRoleModal }) => {
 
   // Handle book car action
   const handleBookCar = (car) => {
-    console.log("Booking car:", car);
+
     onOpenRoleModal("signup");
   };
 

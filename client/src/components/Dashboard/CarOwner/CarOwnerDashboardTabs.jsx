@@ -1,7 +1,6 @@
 import React from "react";
 
 const CarOwnerDashboardTabs = ({ tabs, activeTab, onTabChange }) => {
-  // Debug logs
 
 
   return (
