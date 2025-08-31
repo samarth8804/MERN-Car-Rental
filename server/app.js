@@ -25,7 +25,7 @@ const locationRoutes = require("./routes/locationRoutes");
 // Middleware to handle CORS
 app.use(
   cors({
-    origin: "http://localhost:5173", // Adjust this to your frontend URL
+    origin: process.env.CORS_ORIGIN, // Adjust this to your frontend URL
     methods: ["GET,POST,PUT,DELETE,PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
