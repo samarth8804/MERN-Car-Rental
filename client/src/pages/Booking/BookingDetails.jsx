@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useContext,
+} from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FaSpinner, FaTimesCircle } from "react-icons/fa";
 import { toast } from "react-hot-toast";
@@ -6,6 +12,7 @@ import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPaths";
 import Navbar from "../../components/layouts/Navbar";
 import RatingModal from "../../components/common/RatingModal";
+import { UserContext } from "../../context/UserContext";
 
 // Modular Components
 import BookingHeader from "../../components/BookingDetails/BookingHeader";
@@ -18,6 +25,7 @@ import PricingCard from "../../components/BookingDetails/PricingCard";
 import BookingActions from "../../components/BookingDetails/BookingActions";
 
 const BookingDetails = () => {
+  const { user } = useContext(UserContext);
   const { bookingId } = useParams();
   const navigate = useNavigate();
   const [booking, setBooking] = useState(null);
@@ -94,6 +102,29 @@ const BookingDetails = () => {
     fetchBookingDetails();
   }, [fetchBookingDetails]);
 
+  // ✅ Enhanced back navigation for admin
+  const handleBackNavigation = () => {
+    if (user?.role === "admin") {
+      // Check if admin came from dashboard
+      const returnTab = sessionStorage.getItem("adminDashboardReturnTab");
+      if (returnTab === "bookings") {
+        // Clear the session storage
+        sessionStorage.removeItem("adminDashboardReturnTab");
+        // Navigate back to admin dashboard with bookings tab
+        navigate("/dashboard/admin", {
+          state: { activeTab: "bookings" },
+          replace: true,
+        });
+      } else {
+        // Default admin navigation
+        navigate("/dashboard/admin");
+      }
+    } else {
+      // Existing customer navigation logic
+      navigate("/dashboard/customer");
+    }
+  };
+
   if (loading) {
     return (
       <>
@@ -139,10 +170,7 @@ const BookingDetails = () => {
       <div className="min-h-screen bg-gray-50 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header Section with Unique Code */}
-          <BookingHeader
-            booking={booking}
-            onBack={() => navigate("/dashboard/customer?tab=bookings")}
-          />
+          <BookingHeader booking={booking} onBack={handleBackNavigation} />
 
           {/* ✅ UPDATED LAYOUT - Removed duplicate unique code sections */}
           <div className="space-y-6">
