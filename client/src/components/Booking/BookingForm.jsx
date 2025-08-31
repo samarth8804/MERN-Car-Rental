@@ -42,9 +42,9 @@ const BookingForm = ({
       setAvailabilityState((prev) => ({ ...prev, checking: true }));
 
       try {
-        console.log("About to call checkCarAvailability API...");
+       
         const result = await checkCarAvailability(car._id, startDate, endDate);
-        console.log("API result:", result);
+       
 
         setAvailabilityState({
           checking: false,
@@ -193,16 +193,7 @@ const BookingForm = ({
       dropHasCoords &&
       availabilityValid;
 
-    console.log("Form validation:", {
-      datesValid,
-      pickupValid,
-      dropValid,
-      pickupHasCoords,
-      dropHasCoords,
-      availabilityValid,
-      availabilityState,
-      overallValid,
-    });
+    
 
     return overallValid;
   };
