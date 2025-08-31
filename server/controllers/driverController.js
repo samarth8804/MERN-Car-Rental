@@ -73,7 +73,6 @@ exports.deleteDriver = async (req, res) => {
   }
 };
 
-
 // exports.completeRide = async (req, res) => {
 //   try {
 //     const { bookingId, otp, readyForCompletion } = req.body;
@@ -267,7 +266,8 @@ exports.startRide = async (req, res) => {
 
 exports.completeRide = async (req, res) => {
   try {
-    const { bookingId, uniqueCode, actualReturnDate, kmTravelled, otp } = req.body;
+    const { bookingId, uniqueCode, actualReturnDate, kmTravelled, otp } =
+      req.body;
     const driverId = req.user._id;
 
     // Validate input
@@ -327,7 +327,17 @@ exports.completeRide = async (req, res) => {
       const endDate = new Date(booking.endDate);
       const actualReturn = new Date(actualReturnDate);
 
-      const plannedDays = calculateRentalDays(booking.startDate, booking.endDate);
+      if (actualReturn < startDate) {
+        return res.status(400).json({
+          success: false,
+          message: "Actual return date cannot be before start date",
+        });
+      }
+
+      const plannedDays = calculateRentalDays(
+        booking.startDate,
+        booking.endDate
+      );
 
       let actualDays;
       if (actualReturn <= endDate) {
@@ -369,7 +379,7 @@ exports.completeRide = async (req, res) => {
         plannedDays,
         actualDays,
         lateDays,
-        minimumChargeApplied
+        minimumChargeApplied,
       };
 
       await booking.save();
@@ -425,7 +435,8 @@ exports.completeRide = async (req, res) => {
     if (!booking.tempData) {
       return res.status(400).json({
         success: false,
-        message: "No pending completion data found. Please restart the process.",
+        message:
+          "No pending completion data found. Please restart the process.",
       });
     }
 
@@ -462,7 +473,9 @@ exports.completeRide = async (req, res) => {
       <p>Dear ${customer.fullname},</p>
       <p>Your ride has been completed. Here is the summary:</p>
       <ul>
-        <li><strong>Car:</strong> ${car.brand} ${car.model} (${car.licensePlate})</li>
+        <li><strong>Car:</strong> ${car.brand} ${car.model} (${
+      car.licensePlate
+    })</li>
         <li><strong>Start Date:</strong> ${booking.startDate.toDateString()}</li>
         <li><strong>Return Date:</strong> ${booking.actualReturnDate?.toDateString()}</li>
         <li><strong>Type:</strong> ${booking.bookingType}</li>
@@ -474,7 +487,11 @@ exports.completeRide = async (req, res) => {
       <p>Thanks for choosing easyGo!</p>
     `;
 
-    await sendNotifications(customer.email, "easyGo Ride Completed", rideSummary);
+    await sendNotifications(
+      customer.email,
+      "easyGo Ride Completed",
+      rideSummary
+    );
 
     return res.status(200).json({
       success: true,
@@ -483,7 +500,6 @@ exports.completeRide = async (req, res) => {
       earning: earning,
       completed: true,
     });
-
   } catch (error) {
     console.error("Error completing ride:", error);
     return res.status(500).json({
