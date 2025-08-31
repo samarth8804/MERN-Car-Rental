@@ -1,6 +1,6 @@
 import { FaRupeeSign } from "react-icons/fa";
 
-const PricingOptionsSection = ({ car }) => {
+const PricingOptionsSection = ({ car, isAdminView = false }) => {
   return (
     <div>
       <h3 className="font-bold text-gray-900 mb-4 flex items-center text-lg">
@@ -28,12 +28,16 @@ const PricingOptionsSection = ({ car }) => {
             </div>
           </div>
         </div>
-        <div className="mt-4 p-3 bg-gradient-to-r from-blue-100/80 to-green-100/80 backdrop-blur-sm rounded-xl border border-blue-200/30">
-          <p className="text-xs text-blue-700 font-semibold text-center">
-            ✨ Enjoy full-day benefits with our minimum 1-day rental - Great
-            value for any trip duration!
-          </p>
-        </div>
+
+        {/* ✅ Only show promotional message for customer view */}
+        {!isAdminView && (
+          <div className="mt-4 p-3 bg-gradient-to-r from-blue-100/80 to-green-100/80 backdrop-blur-sm rounded-xl border border-blue-200/30">
+            <p className="text-xs text-blue-700 font-semibold text-center">
+              ✨ Enjoy full-day benefits with our minimum 1-day rental - Great
+              value for any trip duration!
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
