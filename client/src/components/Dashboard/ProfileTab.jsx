@@ -96,6 +96,8 @@ const ProfileTab = ({ user }) => {
                   ? "Car Owner"
                   : user.role === "driver"
                   ? "Driver"
+                  : user.role === "admin"
+                  ? "Admin"
                   : user.role}
               </span>
             </div>
