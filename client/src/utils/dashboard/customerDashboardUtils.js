@@ -1,3 +1,6 @@
+import axiosInstance from "../axiosInstance";
+import { API_PATHS } from "../apiPaths";
+
 // Enhanced booking filters
 export const customerBookingFilters = [
   { key: "all", label: "All Bookings" },
@@ -53,4 +56,45 @@ export const getActiveTabFromURL = (location) => {
 // Get active bookings count for notifications
 export const getActiveBookingsCount = (bookings) => {
   return bookings.filter((b) => !b.isCompleted && !b.isCancelled).length;
+};
+
+export const checkCarAvailability = async (carId, startDate, endDate) => {
+  try {
+    console.log("Frontend: About to call API with:", {
+      carId,
+      startDate,
+      endDate,
+    });
+
+    const response = await axiosInstance.post(
+      "/api/v1/car/check-availability",
+      {
+        carId,
+        startDate,
+        endDate,
+      }
+    );
+
+    console.log("Frontend: API response:", response.data);
+
+    return {
+      success: true,
+      isAvailable: response.data.isAvailable,
+      conflictingBookings: response.data.conflictingBookings || [],
+      message: response.data.message,
+    };
+  } catch (error) {
+    console.error("Frontend: Error checking car availability:", error);
+    console.error("Frontend: Error details:", {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      url: error.config?.url,
+    });
+    return {
+      success: false,
+      isAvailable: false,
+      error: error.response?.data?.message || "Failed to check availability",
+    };
+  }
 };
