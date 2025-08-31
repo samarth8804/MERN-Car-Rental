@@ -34,7 +34,7 @@ import { AuthProvider } from "./context/UserContext";
 
 // Protected Route component
 import ProtectedRoute from "./components/ProtectedRoute";
-import { ToastContainer } from "./config/toastConfig";
+import { ToastContainer } from "./config/ToastConfig";
 
 function App() {
   return (
