@@ -270,16 +270,6 @@ const CarDetailsModal = ({
                       </p>
                     </div>
                   </div>
-
-                  {/* ✅ Rejection Reason (if rejected) */}
-                  {car.status === "rejected" && car.rejectionReason && (
-                    <div className="mt-6 bg-red-50 border border-red-200 rounded-xl p-4">
-                      <h4 className="font-semibold text-red-900 mb-2">
-                        Rejection Reason
-                      </h4>
-                      <p className="text-red-800">{car.rejectionReason}</p>
-                    </div>
-                  )}
                 </div>
               )}
 
