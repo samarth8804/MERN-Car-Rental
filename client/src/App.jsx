@@ -96,7 +96,7 @@ function App() {
             <Route
               path="/booking-details/:bookingId"
               element={
-                <ProtectedRoute allowedRoles={["customer", "driver"]}>
+                <ProtectedRoute allowedRoles={["customer", "admin"]}>
                   <BookingDetails />
                 </ProtectedRoute>
               }
