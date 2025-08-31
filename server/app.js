@@ -26,7 +26,7 @@ const locationRoutes = require("./routes/locationRoutes");
 app.use(
   cors({
     origin: "http://localhost:5173", // Adjust this to your frontend URL
-    methods: ["GET,POST,PUT,DELETE"],
+    methods: ["GET,POST,PUT,DELETE,PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
