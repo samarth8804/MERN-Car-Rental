@@ -29,6 +29,7 @@ exports.getCarDetails = async (req, res) => {
     }
 
     let basicCarDetails = {
+      _id: car._id,
       brand: car.brand,
       model: car.model,
       year: car.year,
@@ -269,6 +270,111 @@ exports.getCarsByCity = async (req, res) => {
       success: false,
       message: "Error fetching cars by city",
       error: error.message,
+    });
+  }
+};
+
+exports.checkCarAvailability = async (req, res) => {
+  try {
+    console.log("=== AVAILABILITY CHECK START ===");
+    console.log("Request body:", req.body);
+
+    const { carId, startDate, endDate } = req.body;
+
+    if (!carId || !startDate || !endDate) {
+      console.log("Missing required fields:", { carId, startDate, endDate });
+      return res.status(400).json({
+        success: false,
+        message: "Car ID, start date, and end date are required",
+      });
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    console.log("Parsed dates:", { start, end });
+
+    // Validate that start date is before end date
+    if (start > end) {
+      console.log("Invalid date range: start > end");
+      return res.status(400).json({
+        success: false,
+        message: "Start date must be before or same as end date",
+      });
+    }
+
+    // First, let's see ALL bookings for this car
+    const allBookingsForCar = await Booking.find({ car: carId });
+    console.log(
+      "All bookings for car:",
+      allBookingsForCar.map((b) => ({
+        id: b._id,
+        startDate: b.startDate,
+        endDate: b.endDate,
+        isCancelled: b.isCancelled,
+        isCompleted: b.isCompleted,
+      }))
+    );
+
+    // ✅ FIXED: For full day rentals, no same-day transitions allowed
+    // Conflict exists if dates overlap OR touch (same day)
+    const conflictingBookings = await Booking.find({
+      car: carId,
+      startDate: { $lte: end }, // Booking starts on or before our end date
+      endDate: { $gte: start }, // Booking ends on or after our start date
+      isCancelled: { $ne: true },
+      isCompleted: { $ne: true },
+    }).populate("customer", "fullname email");
+
+    console.log("Query used for conflicts:", {
+      car: carId,
+      startDate: { $lte: end }, // <= instead of <
+      endDate: { $gte: start }, // >= instead of >
+      isCancelled: { $ne: true },
+      isCompleted: { $ne: true },
+    });
+
+    console.log(
+      "Conflicting bookings found:",
+      conflictingBookings.map((b) => ({
+        id: b._id,
+        startDate: b.startDate,
+        endDate: b.endDate,
+        isCancelled: b.isCancelled,
+        isCompleted: b.isCompleted,
+        customer: b.customerId?.fullname,
+        conflictReason: `Existing: ${b.startDate.toDateString()} to ${b.endDate.toDateString()}, Requested: ${start.toDateString()} to ${end.toDateString()}`,
+      }))
+    );
+
+    const isAvailable = conflictingBookings.length === 0;
+
+    console.log("Final result:", {
+      isAvailable,
+      conflictCount: conflictingBookings.length,
+      requestedPeriod: `${start.toDateString()} to ${end.toDateString()}`,
+    });
+    console.log("=== AVAILABILITY CHECK END ===");
+
+    res.status(200).json({
+      success: true,
+      isAvailable,
+      conflictingBookings: conflictingBookings.map((booking) => ({
+        id: booking._id,
+        startDate: booking.startDate,
+        endDate: booking.endDate,
+        customerName: booking.customerId?.fullname || "Unknown",
+        customerEmail: booking.customerId?.email || "Unknown",
+      })),
+      message: isAvailable
+        ? "Car is available for the selected dates"
+        : `Car is not available. ${conflictingBookings.length} conflicting booking(s) found.`,
+    });
+  } catch (error) {
+    console.error("Error checking car availability:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error while checking availability",
     });
   }
 };
