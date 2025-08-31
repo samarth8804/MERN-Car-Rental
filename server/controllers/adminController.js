@@ -1,11 +1,12 @@
 const Cars = require("../models/Cars");
 const Driver = require("../models/Driver");
 const Customer = require("../models/Customer");
+const CarOwner = require("../models/CarOwner");
 
 exports.getAllCars = async (req, res) => {
   try {
     const cars = await Cars.find()
-      .populate("ownerId", "fullname email")
+      .populate("ownerId", "fullname email phone")
       .sort({ createdAt: -1 });
 
     if (cars.length === 0) {
@@ -237,4 +238,56 @@ exports.rejectDriver = async (req, res) => {
   }
 };
 
+exports.getAllCustomers = async (req, res) => {
+  try {
+    const customers = await Customer.find()
+      .select("-password")
+      .sort({ createdAt: -1 });
 
+    if (customers.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No customers found", success: false });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Customers fetched successfully",
+      customers,
+    });
+  } catch (error) {
+    console.error("Error fetching customers:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+exports.getAllCarOwners = async (req, res) => {
+  try {
+    const carOwners = await CarOwner.find()
+      .select("-password")
+      .sort({ createdAt: -1 });
+
+    if (carOwners.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No car owners found", success: false });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Car owners fetched successfully",
+      carOwners,
+    });
+  } catch (error) {
+    console.error("Error fetching car owners:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
