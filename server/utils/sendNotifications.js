@@ -10,7 +10,7 @@ exports.sendNotifications = async (to, subject, html) => {
   });
 
   await transporter.sendMail({
-    from: `"Car Rental App" <${process.env.EMAIL_USER}`,
+    from: `"easyGo" <${process.env.EMAIL_USER}`,
     to,
     subject,
     html,

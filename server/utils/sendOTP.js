@@ -32,7 +32,7 @@ exports.sendOTP = async (toEmail, subject) => {
   htmlTemplate = htmlTemplate.replace("{{OTP}}", otp);
 
   const mailOptions = {
-    from: `"Car Rental App " <${process.env.EMAIL_USER}>`,
+    from: `"easyGo " <${process.env.EMAIL_USER}>`,
     to: toEmail,
     subject: subject,
     html: htmlTemplate,
