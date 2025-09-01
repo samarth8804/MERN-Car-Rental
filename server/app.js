@@ -27,9 +27,13 @@ app.use(
   cors({
     origin: process.env.CORS_ORIGIN, // Adjust this to your frontend URL
     methods: ["GET,POST,PUT,DELETE,PATCH"],
+    credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+// Add before your routes
+app.options("*", cors());
 
 connectDB();
 
