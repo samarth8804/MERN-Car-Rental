@@ -33,7 +33,7 @@ app.use(
 );
 
 // Add before your routes
-app.options("*", cors());
+// app.options("*", cors());
 
 connectDB();
 
