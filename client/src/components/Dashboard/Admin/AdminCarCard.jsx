@@ -14,6 +14,7 @@ import {
 import { MdDirectionsCar } from "react-icons/md";
 import { getStatusColor } from "../../../utils/dashboard/adminDashboardUtils";
 import ConfirmationModal from "./ConfirmationModal";
+import { getSecureImageUrl } from "../../../utils/imageUtils";
 
 const AdminCarsCard = ({
   car,
@@ -106,7 +107,7 @@ const AdminCarsCard = ({
         <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
           {car.imageUrl ? (
             <img
-              src={car.imageUrl}
+              src={getSecureImageUrl(car.imageUrl)}
               alt={`${car.brand} ${car.model}`}
               className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
               onError={(e) => {

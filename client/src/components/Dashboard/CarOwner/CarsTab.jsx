@@ -11,6 +11,7 @@ import {
   FaTrash, // ✅ ADD: Trash icon
 } from "react-icons/fa";
 import CarDetailsModal from "../CarDetailsModal";
+import { getSecureImageUrl } from "../../../utils/imageUtils";
 
 const CarsTab = ({
   cars,
@@ -111,7 +112,6 @@ const CarsTab = ({
 
   // ✅ ADD: Delete car from details modal handler
   const handleDeleteCarFromDetailsModal = (car) => {
-
     // Close the details modal first
     setShowCarDetailsModal(false);
     setSelectedCar(null);
@@ -128,7 +128,6 @@ const CarsTab = ({
 
   // ✅ ADD: Delete car handler (around line 90)
   const handleDeleteCar = (car) => {
-
     if (onDeleteCar) {
       onDeleteCar(car);
     }
@@ -149,7 +148,6 @@ const CarsTab = ({
   // Filter and sort cars
   const filteredCars = carsWithEarnings
     .filter((car) => {
-
       const matchesStatus =
         filterStatus === "all" || car.status === filterStatus;
 
@@ -210,7 +208,6 @@ const CarsTab = ({
         {/* Search and Filters */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
             {/* Status Filter */}
             <div className="relative">
               <FaFilter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -258,7 +255,7 @@ const CarsTab = ({
                 <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-2xl overflow-hidden">
                   {car.imageUrl ? (
                     <img
-                      src={car.imageUrl}
+                      src={getSecureImageUrl(car.imageUrl)}
                       alt={`${car.brand} ${car.model}`}
                       className="w-full h-full object-cover"
                     />

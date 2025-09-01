@@ -1,6 +1,7 @@
 import React, { useState, memo } from "react";
 import { MdDirectionsCar } from "react-icons/md";
 import { vehicleSpecsConfig } from "../../utils/data";
+import { getSecureImageUrl } from "../../utils/imageUtils";
 
 const CarInfoCard = memo(({ booking }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -28,7 +29,7 @@ const CarInfoCard = memo(({ booking }) => {
         {booking.car?.imageUrl ? (
           <>
             <img
-              src={booking.car.imageUrl}
+              src={getSecureImageUrl(booking.car.imageUrl)}
               alt={`${booking.car.brand} ${booking.car.model}`}
               className={`w-full h-full object-cover transition-all duration-500 ${
                 imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-110"

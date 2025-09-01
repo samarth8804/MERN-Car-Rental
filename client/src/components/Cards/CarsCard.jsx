@@ -1,6 +1,7 @@
 import React from "react";
 import { FaStar, FaMapMarkerAlt, FaCar } from "react-icons/fa";
 import { MdDirectionsCar } from "react-icons/md";
+import { getSecureImageUrl } from "../../utils/imageUtils";
 
 const CarsCard = ({
   car,
@@ -14,7 +15,7 @@ const CarsCard = ({
       <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 rounded-t-2xl overflow-hidden">
         {car.imageUrl ? (
           <img
-            src={car.imageUrl}
+            src={getSecureImageUrl(car.imageUrl)}
             alt={`${car.brand} ${car.model}`}
             className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
             onError={(e) => {

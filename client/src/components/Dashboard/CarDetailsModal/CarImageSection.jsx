@@ -6,6 +6,7 @@ import {
   FaCarSide,
 } from "react-icons/fa";
 import { MdDirectionsCar } from "react-icons/md";
+import { getSecureImageUrl } from "../../../utils/imageUtils";
 
 const CarImageSection = ({
   car,
@@ -66,7 +67,7 @@ const CarImageSection = ({
       {car.imageUrl ? (
         <>
           <img
-            src={car.imageUrl}
+            src={getSecureImageUrl(car.imageUrl)}
             alt={`${car.brand} ${car.model}`}
             className={`w-full h-full object-cover transition-all duration-500 ${
               imageLoaded ? "opacity-100 scale-100" : "opacity-0 scale-110"

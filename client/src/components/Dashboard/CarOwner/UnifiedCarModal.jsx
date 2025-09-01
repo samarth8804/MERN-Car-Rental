@@ -18,6 +18,7 @@ import {
   validateCarField,
   validateEntireCarForm,
 } from "../../../utils/dashboard/carValidationRules";
+import { getSecureImageUrl } from "../../../utils/imageUtils";
 
 const INDIAN_CITIES = [
   "Mumbai",
@@ -517,7 +518,7 @@ const UnifiedCarModal = ({
                     <div className="flex items-center space-x-4">
                       {car.imageUrl && (
                         <img
-                          src={car.imageUrl}
+                          src={getSecureImageUrl(car.imageUrl)}
                           alt={`${car.brand} ${car.model}`}
                           className="w-16 h-16 object-cover rounded-lg border border-gray-300"
                         />
@@ -677,7 +678,7 @@ const UnifiedCarModal = ({
                         {/* ✅ FIXED: Actual Image - Remove the Date.now() from key as it prevents caching */}
                         <img
                           key={formData.imageUrl} // Simple key without timestamp
-                          src={formData.imageUrl}
+                          src={getSecureImageUrl(formData.imageUrl)}
                           alt="Car preview"
                           className="w-full h-full object-contain bg-white transition-opacity duration-300"
                           onLoad={handleImageLoad}

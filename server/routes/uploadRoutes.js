@@ -15,7 +15,9 @@ router.post(
     }
 
     // Return the file path or any other information you need
-    const imageUrl = `${req.protocol}://${req.get("host")}/uploads/${
+    const protocol =
+      process.env.NODE_ENV === "production" ? "https" : req.protocol;
+    const imageUrl = `${protocol}://${req.get("host")}/uploads/${
       req.file.filename
     }`;
     res.status(200).json({

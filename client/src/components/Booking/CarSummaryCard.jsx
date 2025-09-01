@@ -8,6 +8,7 @@ import {
   FaCheckCircle,
 } from "react-icons/fa";
 import { MdDirectionsCar } from "react-icons/md";
+import { getSecureImageUrl } from "../../utils/imageUtils";
 
 const CarSummaryCard = ({ car }) => {
   return (
@@ -16,7 +17,7 @@ const CarSummaryCard = ({ car }) => {
       <div className="relative aspect-video bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100">
         {car.imageUrl ? (
           <img
-            src={car.imageUrl}
+            src={getSecureImageUrl(car.imageUrl)}
             alt={`${car.brand} ${car.model}`}
             className="w-full h-full object-cover"
           />
