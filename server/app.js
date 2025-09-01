@@ -41,6 +41,7 @@ app.get("/debug/uploads", (req, res) => {
     path.join(__dirname, "uploads"),
     path.join(process.cwd(), "uploads"),
     "/opt/render/project/src/uploads",
+    "/opt/render/project/src/server/uploads", // Add this path
   ];
 
   const results = {};
@@ -74,7 +75,6 @@ app.get("/debug/uploads", (req, res) => {
 });
 
 // Improved static file serving for uploads
-// First try the GitHub repo location, then try Render's runtime location
 const uploadsDir = path.join(__dirname, "uploads");
 
 // Make sure uploads directory exists
@@ -102,17 +102,28 @@ app.use("/uploads", (req, res, next) => {
       // File doesn't exist in the main directory
       // Try alternative paths on Render
       const renderPath = path.join(process.cwd(), "uploads", req.path);
+      const renderServerPath = path.join(__dirname, "uploads", req.path); // This will find the right path
 
+      // Try the first alternative path
       fs.access(renderPath, fs.constants.F_OK, (err2) => {
         if (!err2) {
           // Found in alternative location
           res.sendFile(renderPath);
         } else {
-          // Not found anywhere, log info and pass to next middleware
-          console.log(`File not found: ${req.path}`);
-          console.log(`Tried: ${filePath}`);
-          console.log(`Tried: ${renderPath}`);
-          res.status(404).send("Image not found");
+          // Try the second alternative path
+          fs.access(renderServerPath, fs.constants.F_OK, (err3) => {
+            if (!err3) {
+              // Found in server uploads
+              res.sendFile(renderServerPath);
+            } else {
+              // Not found anywhere, log info and pass to next middleware
+              console.log(`File not found: ${req.path}`);
+              console.log(`Tried: ${filePath}`);
+              console.log(`Tried: ${renderPath}`);
+              console.log(`Tried: ${renderServerPath}`);
+              res.status(404).send("Image not found");
+            }
+          });
         }
       });
     }
