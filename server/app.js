@@ -26,7 +26,7 @@ const locationRoutes = require("./routes/locationRoutes");
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN, // Adjust this to your frontend URL
-    methods: ["GET,POST,PUT,DELETE,PATCH"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], // ✅ Fixed array format
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
   })
