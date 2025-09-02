@@ -1,9 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const upload = require("../middlewares/uploadMiddleware");
+const { upload } = require("../middlewares/uploadMiddleware");
 const { protect } = require("../middlewares/authMiddleware");
-
-// Route to handle image upload
 
 router.post(
   "/upload-image",
@@ -14,12 +12,11 @@ router.post(
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-    // Return the file path or any other information you need
-    const protocol =
-      process.env.NODE_ENV === "production" ? "https" : req.protocol;
-    const imageUrl = `${protocol}://${req.get("host")}/uploads/${
-      req.file.filename
-    }`;
+    // Cloudinary provides secure URL in req.file.path
+    const imageUrl = req.file.path;
+
+    console.log("Cloudinary image uploaded:", imageUrl);
+
     res.status(200).json({
       success: true,
       message: "Image uploaded successfully",

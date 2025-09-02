@@ -3,6 +3,7 @@ const { sendNotifications } = require("../utils/sendNotifications");
 const Booking = require("../models/Bookings");
 const path = require("path");
 const fs = require("fs").promises;
+const { cloudinary } = require("../config/cloudinary");
 
 exports.getCarDetails = async (req, res) => {
   try {
@@ -88,10 +89,9 @@ exports.getCarDetails = async (req, res) => {
 exports.deleteCar = async (req, res) => {
   try {
     const { carId } = req.params;
-    const role = req.role; // From auth middleware
-    const userId = req.user._id; // From auth middleware
+    const role = req.role;
+    const userId = req.user._id;
 
-    // Find the car by ID and owner
     let car = await Cars.findById(carId).populate("ownerId", "fullname email");
 
     if (!car) {
@@ -111,7 +111,6 @@ exports.deleteCar = async (req, res) => {
       });
     }
 
-    // Check if the car is in an active booking
     const activeBooking = await Booking.findOne({
       car: car._id,
       isCompleted: false,
@@ -125,27 +124,27 @@ exports.deleteCar = async (req, res) => {
       });
     }
 
-    // Delete the car
-    await car.deleteOne();
-
-    // Delete the car image from storage
-    if (car.imageUrl) {
+    // Delete the car image from Cloudinary if it's a Cloudinary URL
+    if (car.imageUrl && car.imageUrl.includes("cloudinary.com")) {
       try {
-        const imagePath = path.join(
-          __dirname,
-          "..",
-          "uploads",
-          path.basename(car.imageUrl)
-        );
-        await fs.unlink(imagePath);
-        console.log("Car image deleted successfully");
+        // Extract public_id from Cloudinary URL
+        const publicId = car.imageUrl.split("/").pop().split(".")[0];
+
+        const folderPath = car.imageUrl.includes("/car-rental/")
+          ? "car-rental/"
+          : "";
+
+        await cloudinary.uploader.destroy(folderPath + publicId);
+        console.log("Car image deleted from Cloudinary successfully");
       } catch (err) {
-        console.error("Error deleting car image:", err);
+        console.error("Error deleting car image from Cloudinary:", err);
       }
     }
 
-    // If the user is an admin, send a notification email to the car owner
+    // Delete the car from database
+    await car.deleteOne();
 
+    // If the user is an admin, send a notification email to the car owner
     if (role === "admin" && car.ownerId.email) {
       await sendNotifications(
         car.ownerId.email,

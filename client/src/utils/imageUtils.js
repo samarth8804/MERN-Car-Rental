@@ -1,21 +1,25 @@
 /**
- * Ensures image URLs use HTTPS in production and handles localhost URLs
+ * Ensures image URLs are properly handled
  * @param {string} url - The original image URL
- * @returns {string} - The secure image URL
+ * @returns {string} - The processed image URL
  */
 export const getSecureImageUrl = (url) => {
   if (!url) return "";
 
-  // 1. Handle localhost URLs in production
+  // Cloudinary URLs are already secure
+  if (url.includes("cloudinary.com")) {
+    return url;
+  }
+
+  // For non-Cloudinary URLs, use the existing logic
   if (window.location.hostname !== "localhost" && url.includes("localhost")) {
-    // Replace localhost URL with deployed backend URL
     return url.replace(
-      /https?:\/\/localhost:3000/,
+      /http:\/\/localhost:3000/g,
       import.meta.env.VITE_API_BASE_URL
     );
   }
 
-  // 2. In production (Vercel), convert http:// to https://
+  // Convert HTTP to HTTPS if needed
   if (window.location.protocol === "https:" && url.startsWith("http://")) {
     return url.replace("http://", "https://");
   }
