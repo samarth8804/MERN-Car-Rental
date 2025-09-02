@@ -1,10 +1,46 @@
-import React, { useRef, useState } from "react";
-import { FaUpload, FaImage, FaTimes, FaSpinner } from "react-icons/fa";
+import React, { useRef, useState, useEffect } from "react";
+import {
+  FaUpload,
+  FaTimes,
+  FaSpinner,
+  FaExclamationCircle,
+} from "react-icons/fa";
+import { getSecureImageUrl } from "../../utils/imageUtils";
 
 const ImageUpload = ({ currentImage, onImageUpload, uploading, error }) => {
   const fileInputRef = useRef(null);
   const [dragActive, setDragActive] = useState(false);
-  const [preview, setPreview] = useState(currentImage || null);
+  const [preview, setPreview] = useState(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  // Set up preview when currentImage changes
+  useEffect(() => {
+    if (currentImage) {
+      // If it's a Cloudinary URL or regular URL, use getSecureImageUrl
+      if (typeof currentImage === "string") {
+        setPreview(getSecureImageUrl(currentImage));
+
+        // Preload the image to check if it loads properly
+        const img = new Image();
+        img.src = getSecureImageUrl(currentImage);
+        img.onload = () => setImageLoaded(true);
+        img.onerror = () =>
+          console.error("Failed to load image:", currentImage);
+      }
+      // If it's a File object (from local selection)
+      else if (currentImage instanceof File) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setPreview(e.target.result);
+          setImageLoaded(true);
+        };
+        reader.readAsDataURL(currentImage);
+      }
+    } else {
+      setPreview(null);
+      setImageLoaded(false);
+    }
+  }, [currentImage]);
 
   // Handle file selection
   const handleFileSelect = (file) => {
@@ -22,14 +58,15 @@ const ImageUpload = ({ currentImage, onImageUpload, uploading, error }) => {
       return;
     }
 
-    // Create preview
+    // Create preview immediately for better UX
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreview(e.target.result);
+      setImageLoaded(true);
     };
     reader.readAsDataURL(file);
 
-    // Upload file
+    // Upload file to Cloudinary via parent component
     onImageUpload(file);
   };
 
@@ -60,11 +97,17 @@ const ImageUpload = ({ currentImage, onImageUpload, uploading, error }) => {
     }
   };
 
-  const clearImage = () => {
+  const clearImage = (e) => {
+    if (e) {
+      e.stopPropagation();
+    }
     setPreview(null);
+    setImageLoaded(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+    // Notify parent that image was cleared
+    onImageUpload(null);
   };
 
   return (
@@ -82,7 +125,7 @@ const ImageUpload = ({ currentImage, onImageUpload, uploading, error }) => {
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
-        onClick={() => !uploading && fileInputRef.current?.click()}
+        onClick={() => !uploading && !preview && fileInputRef.current?.click()}
       >
         <input
           ref={fileInputRef}
@@ -96,21 +139,37 @@ const ImageUpload = ({ currentImage, onImageUpload, uploading, error }) => {
         {uploading ? (
           <div className="text-center">
             <FaSpinner className="animate-spin text-3xl text-blue-600 mx-auto mb-4" />
-            <p className="text-blue-600 font-medium">Uploading image...</p>
+            <p className="text-blue-600 font-medium">
+              Uploading to Cloudinary...
+            </p>
+            <p className="text-sm text-blue-500">This may take a moment</p>
           </div>
         ) : preview ? (
           <div className="relative">
-            <img
-              src={preview}
-              alt="Car preview"
-              className="w-full h-48 object-cover rounded-lg"
-            />
+            {/* Image with loading state */}
+            <div className="relative h-48">
+              <img
+                src={preview}
+                alt="Car preview"
+                className={`w-full h-full object-contain bg-white transition-opacity duration-300 rounded-lg ${
+                  imageLoaded ? "opacity-100" : "opacity-0"
+                }`}
+                onLoad={() => setImageLoaded(true)}
+                onError={() => setImageLoaded(false)}
+              />
+
+              {/* Loading overlay */}
+              {!imageLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
+                  <FaSpinner className="animate-spin text-3xl text-blue-600" />
+                </div>
+              )}
+            </div>
+
+            {/* Delete button */}
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                clearImage();
-              }}
+              onClick={clearImage}
               className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
             >
               <FaTimes />
@@ -128,7 +187,16 @@ const ImageUpload = ({ currentImage, onImageUpload, uploading, error }) => {
       </div>
 
       {/* Error Message */}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <div className="flex items-center text-sm text-red-600">
+          <FaExclamationCircle className="mr-2" />
+          <p>
+            {typeof error === "string"
+              ? error
+              : "Failed to upload image. Please try again."}
+          </p>
+        </div>
+      )}
 
       {/* Helper Text */}
       <p className="text-xs text-gray-500">

@@ -165,32 +165,23 @@ const UnifiedCarModal = ({
 
   // Handle image upload
   const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0] || e;
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload a valid image file");
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image size should be less than 5MB");
-      return;
-    }
-
+    // Reset states
     setImageUploading(true);
     setImageError(false);
     setImageLoaded(false);
 
     try {
-      const uploadFormData = new FormData();
-      uploadFormData.append("image", file);
+      const formData = new FormData();
+      formData.append("image", file);
+
+      console.log("Uploading image to Cloudinary...");
 
       const response = await axiosInstance.post(
-        API_PATHS.UPLOAD.UPLOAD_IMAGE,
-        uploadFormData,
+        `${API_PATHS.UPLOAD.UPLOAD_IMAGE}`,
+        formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -198,15 +189,33 @@ const UnifiedCarModal = ({
         }
       );
 
-      if (response.data.success) {
+      console.log("Upload response:", response.data);
+
+      if (response.data.success && response.data.imageUrl) {
+        // Success - update form with the Cloudinary URL
         setFormData((prev) => ({ ...prev, imageUrl: response.data.imageUrl }));
-        setErrors((prev) => ({ ...prev, imageUrl: null }));
+        setErrors((prev) => ({ ...prev, imageUrl: "" }));
+
+        // Preload the image
+        const img = new Image();
+        img.src = response.data.imageUrl;
+        img.onload = handleImageLoad;
+        img.onerror = handleImageError;
+
         toast.success("Image uploaded successfully!");
       } else {
-        toast.error("Failed to upload image");
+        throw new Error(response.data.message || "Upload failed");
       }
     } catch (error) {
-      toast.error("Failed to upload image. Please try again.");
+      console.error("Image upload error:", error);
+      setImageError(true);
+      setErrors((prev) => ({
+        ...prev,
+        imageUrl: "Failed to upload image. Please try again.",
+      }));
+      toast.error(
+        `Failed to upload image: ${error.message || "Unknown error"}`
+      );
     } finally {
       setImageUploading(false);
     }
