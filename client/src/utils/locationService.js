@@ -1,4 +1,5 @@
 import { API_PATHS } from "./apiPaths";
+import axiosInstance from "./axiosInstance";
 
 class LocationService {
   constructor() {
@@ -12,13 +13,13 @@ class LocationService {
     if (this.cache.has(cacheKey)) return this.cache.get(cacheKey);
 
     try {
-      const response = await fetch(
-        `/${API_PATHS.LOCATION.SEARCH}?q=${encodeURIComponent(query.trim())}`
+      // Use axiosInstance with the full path (not a relative URL)
+      const response = await axiosInstance.get(
+        `${API_PATHS.LOCATION.SEARCH}?q=${encodeURIComponent(query.trim())}`
       );
-      if (!response.ok) return [];
 
-      const data = await response.json();
-
+      const data = response.data;
+      console.log("Place search results:", data);
 
       const results = Array.isArray(data)
         ? data.map((item, idx) => ({
@@ -44,22 +45,25 @@ class LocationService {
 
       return results;
     } catch (error) {
+      console.error("Error searching places:", error);
       return [];
     }
   }
 
   async reverseGeocode(lat, lon) {
     try {
-      const response = await fetch(
-        `/${API_PATHS.LOCATION.REVERSE}?lat=${lat}&lon=${lon}`
+      // Use axiosInstance with the full path (not a relative URL)
+      const response = await axiosInstance.get(
+        `${API_PATHS.LOCATION.REVERSE}?lat=${lat}&lon=${lon}`
       );
-      if (!response.ok) throw new Error("Reverse geocode failed");
-      const data = await response.json();
+
+      const data = response.data;
       return {
         address: data.display_name || `${lat.toFixed(4)}, ${lon.toFixed(4)}`,
         placeId: data.place_id,
       };
     } catch (error) {
+      console.error("Error in reverse geocoding:", error);
       return {
         address: `${lat.toFixed(4)}, ${lon.toFixed(4)}`,
         placeId: null,
@@ -73,14 +77,40 @@ class LocationService {
         reject(new Error("Geolocation is not supported"));
         return;
       }
+
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          resolve({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
+        async (position) => {
+          try {
+            const coords = {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            };
+
+            // Get address from coordinates
+            const addressInfo = await this.reverseGeocode(
+              coords.latitude,
+              coords.longitude
+            );
+
+            resolve({
+              ...coords,
+              address: addressInfo.address,
+              placeId: addressInfo.placeId,
+            });
+          } catch (error) {
+            console.error("Error getting location details:", error);
+            resolve({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              address: `${position.coords.latitude.toFixed(
+                4
+              )}, ${position.coords.longitude.toFixed(4)}`,
+              placeId: null,
+            });
+          }
         },
         (error) => {
+          console.error("Geolocation error:", error);
           reject(error);
         },
         {
