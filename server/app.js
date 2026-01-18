@@ -5,6 +5,7 @@ const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
 const app = express();
+const { initializeCronJobs } = require("./utils/cronJobs");
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ const carRoutes = require("./routes/carRoutes");
 const driverRoutes = require("./routes/driverRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const locationRoutes = require("./routes/locationRoutes");
+const healthRoutes = require("./routes/healthRoutes");
 
 // Middleware to handle CORS
 app.use(
@@ -33,6 +35,8 @@ app.use(
 );
 
 connectDB();
+
+initializeCronJobs();
 
 // Debug endpoint to see all upload locations
 app.get("/debug/uploads", (req, res) => {
@@ -140,6 +144,7 @@ app.use("/api/v1/car", carRoutes);
 app.use("/api/v1/driver", driverRoutes);
 app.use("/api/v1/upload", uploadRoutes);
 app.use("/api/location", locationRoutes);
+app.use("/api/health", healthRoutes);
 
 const PORT = process.env.PORT || 5000;
 
