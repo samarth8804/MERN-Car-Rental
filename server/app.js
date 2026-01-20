@@ -33,7 +33,7 @@ app.use(
   })
 );
 
-connectDB();
+// connectDB();
 
 // Debug endpoint to see all upload locations
 app.get("/debug/uploads", (req, res) => {
