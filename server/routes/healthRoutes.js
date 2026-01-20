@@ -3,7 +3,7 @@ const router = express.Router();
 const mongoose = require("mongoose");
 
 // Health check endpoint
-router.get("/", (req, res) => {
+router.get("/health", (req, res) => {
   const dbStatus =
     mongoose.connection.readyState === 1 ? "connected" : "disconnected";
 
