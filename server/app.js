@@ -34,6 +34,13 @@ app.use(
 );
 
 // connectDB();
+async () => {
+  try {
+    await connectDB();
+  } catch (err) {
+    console.error("Failed to connect to database", err);
+  }
+};
 
 // Debug endpoint to see all upload locations
 app.get("/debug/uploads", (req, res) => {
