@@ -2,11 +2,23 @@ const mongoose = require("mongoose");
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI, {});
-    console.log("MongoDB connected successfully");
-  } catch (err) {
-    console.error("Error connecting to MongoDB : ", err);
-    // process.exit(1); // Exit the process with failure
+    if (
+      mongoose.connection.readyState === 1 ||
+      mongoose.connection.readyState === 2
+    ) {
+      return;
+    }
+
+    console.log(
+      "MONGO_URI in runtime:",
+      !!process.env.MONGO_URI ? "PRESENT" : "MISSING"
+    );
+
+    const conn = await mongoose.connect(process.env.MONGO_URI);
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.error("MongoDB connection error on Vercel:", error.message);
+    console.error(error.stack);
   }
 };
 
