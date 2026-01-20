@@ -5,7 +5,6 @@ const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
 const app = express();
-const { initializeCronJobs } = require("./utils/cronJobs");
 
 dotenv.config();
 
@@ -35,8 +34,6 @@ app.use(
 );
 
 connectDB();
-
-initializeCronJobs();
 
 // Debug endpoint to see all upload locations
 app.get("/debug/uploads", (req, res) => {
@@ -144,10 +141,6 @@ app.use("/api/v1/car", carRoutes);
 app.use("/api/v1/driver", driverRoutes);
 app.use("/api/v1/upload", uploadRoutes);
 app.use("/api/location", locationRoutes);
-app.use("/api/health", healthRoutes);
+app.use("/api", healthRoutes);
 
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+module.exports = app;
